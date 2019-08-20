@@ -1,14 +1,13 @@
 package cn.viewshine.cloudthree.excel.utils;
 
+import cn.viewshine.cloudthree.excel.annotation.ExcelField;
 import cn.viewshine.cloudthree.excel.metadata.ColumnProperty;
 import net.sf.cglib.beans.BeanMap;
 import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.ss.util.CellRangeAddress;
 
-import java.lang.reflect.Field;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.time.*;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAccessor;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -44,6 +43,13 @@ public class CellUtils {
                 } else if (LocalDate.class.equals(columnField.getColumnField().getType())) {
                     cell.setCellValue(Date.from(((LocalDate)data.get(columnField.getColumnField().getName())).
                             atStartOfDay(ZoneId.systemDefault()).toInstant()));
+                } else if (TemporalAccessor.class.isAssignableFrom(columnField.getColumnField().getType())) {
+                    String format = columnField.getColumnField().getDeclaredAnnotation(ExcelField.class).format();
+                    if (format.isEmpty()) {
+                        cell.setCellValue(data.getOrDefault(columnField.getColumnField().getName(), "").toString());
+                    } else {
+                        cell.setCellValue(DateTimeFormatter.ofPattern(format).format((TemporalAccessor)data.get(columnField.getColumnField().getName())));
+                    }
                 } else {
                     cell.setCellValue(((Number)data.get(columnField.getColumnField().getName())).doubleValue());
                 }
