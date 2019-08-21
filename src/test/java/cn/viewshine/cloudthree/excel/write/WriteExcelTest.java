@@ -3,30 +3,12 @@ package cn.viewshine.cloudthree.excel.write;
 import cn.viewshine.cloudthree.excel.ExcelFactory;
 import cn.viewshine.cloudthree.excel.vo.Sex;
 import cn.viewshine.cloudthree.excel.vo.WriteModelVo;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.hssf.util.HSSFColor;
-import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.ss.util.AreaReference;
-import org.apache.poi.ss.util.CellReference;
-import org.apache.poi.ss.util.CellUtil;
-import org.apache.poi.xssf.usermodel.XSSFPivotTable;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.junit.Before;
 import org.junit.Test;
-
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.TimeUnit;
-
-import static org.apache.poi.ss.SpreadsheetVersion.EXCEL2007;
-import static org.apache.poi.ss.usermodel.IndexedColors.GREY_25_PERCENT;
 
 /**
  * @Description:
@@ -54,7 +36,7 @@ public class WriteExcelTest {
 
             BigDecimal money = BigDecimal.valueOf(ThreadLocalRandom.current().nextFloat());
             BigDecimal price = BigDecimal.valueOf(ThreadLocalRandom.current().nextDouble());
-            data.add(new WriteModelVo(i+"","常"+i,sex,20+i,1999-i,money,price,tuanyuan,now.plusDays(i)));
+            data.add(new WriteModelVo(i+"",null,sex,20+i,1999-i,money,price,null,LocalDateTime.now(),new Date()));
         }
     }
 

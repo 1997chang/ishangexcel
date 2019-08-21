@@ -1,15 +1,9 @@
 package cn.viewshine.cloudthree.excel.vo;
 
 import cn.viewshine.cloudthree.excel.annotation.ExcelField;
-import org.junit.Test;
-
-import javax.xml.bind.ValidationEvent;
-import java.lang.reflect.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.Date;
 
 /**
  * @author: 常伟
@@ -41,11 +35,14 @@ public class WriteModelVo extends FatherVo {
     @ExcelField(name = "是否团员")
     private Boolean tuanyuan;
 
-    @ExcelField(name = "日期",format = "yyyy-MM-dd")
+    @ExcelField(name = "出生日期")
     private LocalDateTime localDateTime;
 
+    @ExcelField(name = "注册时间",format = "yyyy-MM-dd")
+    private Date date;
+
     public WriteModelVo(String id,String name, Sex sex, int age, Integer year, BigDecimal money, BigDecimal price,
-                         Boolean tuanyuan, LocalDateTime localDateTime) {
+                         Boolean tuanyuan, LocalDateTime localDateTime, Date date) {
         super(id);
         this.name = name;
         this.sex = sex;
@@ -55,6 +52,7 @@ public class WriteModelVo extends FatherVo {
         this.price = price;
         this.tuanyuan = tuanyuan;
         this.localDateTime = localDateTime;
+        this.date = date;
     }
 
     public String getName() {
@@ -119,5 +117,13 @@ public class WriteModelVo extends FatherVo {
 
     public void setLocalDateTime(LocalDateTime localDateTime) {
         this.localDateTime = localDateTime;
+    }
+
+    public Date getDate() {
+        return date;
+    }
+
+    public void setDate(Date date) {
+        this.date = date;
     }
 }

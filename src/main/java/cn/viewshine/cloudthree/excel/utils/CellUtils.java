@@ -29,41 +29,41 @@ public class CellUtils {
      * @param columnField
      */
     public static void writeContentDataAndStyle(Cell cell, BeanMap data, ColumnProperty columnField) {
+        //设置单元格的样式
+        cell.setCellStyle(columnField.getCellStyle());
+
+        //设置单元格的值
+        Object value = data.get(columnField.getColumnField().getName());
+        if (value == null) {
+            cell.setCellValue("");
+            return;
+        }
+
         switch (cell.getCellType()) {
             case NUMERIC:
-                //表示的数字
                 if (Date.class.equals(columnField.getColumnField().getType())) {
-                    //表示Data类型
-                    cell.setCellValue((Date)data.get(columnField.getColumnField().getName()));
+                    cell.setCellValue((Date) value);
                 } else if (Calendar.class.equals(columnField.getColumnField().getType())) {
-                    cell.setCellValue((Calendar)data.get(columnField.getColumnField().getName()));
-                } else if (LocalDateTime.class.equals(columnField.getColumnField().getType())) {
-                    cell.setCellValue(Date.from(((LocalDateTime)data.get(columnField.getColumnField().getName())).
-                            atZone(ZoneId.systemDefault()).toInstant()));
-                } else if (LocalDate.class.equals(columnField.getColumnField().getType())) {
-                    cell.setCellValue(Date.from(((LocalDate)data.get(columnField.getColumnField().getName())).
-                            atStartOfDay(ZoneId.systemDefault()).toInstant()));
-                } else if (TemporalAccessor.class.isAssignableFrom(columnField.getColumnField().getType())) {
+                    cell.setCellValue((Calendar) value);
+                }
+                //如果是Java8之后的时间，我们直接使用格式化字符串显示内容
+                else if (TemporalAccessor.class.isAssignableFrom(columnField.getColumnField().getType())) {
                     String format = columnField.getColumnField().getDeclaredAnnotation(ExcelField.class).format();
                     if (format.isEmpty()) {
-                        cell.setCellValue(data.getOrDefault(columnField.getColumnField().getName(), "").toString());
+                        cell.setCellValue(value.toString());
                     } else {
-                        cell.setCellValue(DateTimeFormatter.ofPattern(format).format((TemporalAccessor)data.get(columnField.getColumnField().getName())));
+                        cell.setCellValue(DateTimeFormatter.ofPattern(format).format((TemporalAccessor) value));
                     }
                 } else {
-                    cell.setCellValue(((Number)data.get(columnField.getColumnField().getName())).doubleValue());
+                    cell.setCellValue(((Number) value).doubleValue());
                 }
                 break;
-            case STRING:
-                cell.setCellValue(data.getOrDefault(columnField.getColumnField().getName(),"").toString());
-                break;
             case BOOLEAN:
-                cell.setCellValue((boolean)data.getOrDefault(columnField.getColumnField().getName(),true));
+                cell.setCellValue((Boolean) value);
                 break;
             default:
-                cell.setCellValue(data.getOrDefault(columnField.getColumnField().getName(), "").toString());
+                cell.setCellValue(value.toString());
         }
-        cell.setCellStyle(columnField.getCellStyle());
     }
 
     /**
