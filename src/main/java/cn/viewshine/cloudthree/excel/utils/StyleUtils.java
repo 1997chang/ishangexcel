@@ -3,13 +3,12 @@ package cn.viewshine.cloudthree.excel.utils;
 import org.apache.poi.ss.usermodel.*;
 
 /**
- * @Description:
- * @Author: ChangWei
- * @Email: changwei@viewshine.cn
- * @Date: 2019/8/15
+ * 单元格的样式工具类
+ * @author changwei[changwei@viewshine.cn]
  */
 public class StyleUtils {
 
+    private StyleUtils() { }
     /**
      * 表示公共单元格样式
      * @param workbook
@@ -22,9 +21,6 @@ public class StyleUtils {
         font.setFontName("宋体");
         font.setFontHeightInPoints((short)12);
         result.setFont(font);
-
-        //填充效果
-        result.setFillPattern(FillPatternType.SOLID_FOREGROUND);
 
         //对齐方式
         result.setAlignment(HorizontalAlignment.CENTER);
@@ -53,7 +49,8 @@ public class StyleUtils {
         font.setBold(true);
         result.setFont(font);
 
-        //设置背景颜色
+        //填充效果
+        result.setFillPattern(FillPatternType.SOLID_FOREGROUND);
         result.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.index);
         return result;
     }

@@ -13,11 +13,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * @author: 常伟
- * @create: 2019/8/6 22:42
- * @email: kmustchang@qq.com
- * @version: 1.0
- * @Description: 表示Excel的工厂类，用于创建新的Excel（XLS或者XLSX），用于读取XLS或者XLSX文件的内容
+ * 表示Excel的工厂类，用于创建新的Excel（XLS或者XLSX），用于读取XLS或者XLSX文件的内容
+ * @author changwei[changwei@viewshine.cn]
+ * @version 1.0
  */
 public final class ExcelFactory {
 
@@ -58,6 +56,7 @@ public final class ExcelFactory {
      * 用于将Map数据写入到Excel文件中。
      * @param data Key：Sheet表格名称，Value：Sheet对应的写入数据内容。用于写入多个Sheet
      * @param outputStream 表示写入数据的输出流
+     * @param xssf 表示是否是XSSF类型的文件，是否是XLSX文件
      */
     public static void writeExcel(Map<String, List> data, OutputStream outputStream, boolean xssf) {
         WriteExcel.wirteExcelByStream(data, outputStream, xssf);
@@ -96,7 +95,7 @@ public final class ExcelFactory {
      * @param data 表示写入到Excel中文件的内容
      * @param response response对应，完成Excel的下载任务
      */
-    public static void downLoadExcel(List data, HttpServletResponse response) {
+    public static void downloadExcel(List data, HttpServletResponse response) {
         downloadExcel(Collections.singletonMap( "sheet", data), true, response);
     }
 

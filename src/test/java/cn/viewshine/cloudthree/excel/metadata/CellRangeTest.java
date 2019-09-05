@@ -1,21 +1,17 @@
 package cn.viewshine.cloudthree.excel.metadata;
 
 import cn.viewshine.cloudthree.excel.utils.CellRangeUtils;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 /**
- * @Description:
- * @Author: ChangWei
- * @Email: changwei@viewshine.cn
- * @Date: 2019/8/12
+ * 单元格合并测试类
+ * @author  changwei[changwei@viewshine.cn]
  */
 public class CellRangeTest {
 

@@ -3,13 +3,10 @@ package cn.viewshine.cloudthree.excel.vo;
 import cn.viewshine.cloudthree.excel.annotation.ExcelField;
 
 /**
- * @Description:
- * @Author: ChangWei
- * @Email: changwei@viewshine.cn
- * @Date: 2019/8/20
+ * @author changwei[changwei@viewshine.cn]
  */
 public class FatherVo {
-    @ExcelField(name = "证件号")
+    @ExcelField(name = {"威星表格","证件号"})
     private String id;
 
 

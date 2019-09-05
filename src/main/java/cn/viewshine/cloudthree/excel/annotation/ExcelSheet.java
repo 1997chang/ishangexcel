@@ -6,10 +6,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * @Auhtor: Changwei
- * @Email: changwei@viewshine.cn
- * @Date: 2019/8/11
- * @Description: 这个表示写入Sheet的名称
+ * 这个表示写入Sheet的名称
+ * @author changwei[changwei@viewshine.cn]
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)

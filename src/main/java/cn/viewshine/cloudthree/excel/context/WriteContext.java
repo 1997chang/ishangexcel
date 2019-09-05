@@ -9,12 +9,12 @@ import net.sf.cglib.beans.BeanMap;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -22,11 +22,9 @@ import static cn.viewshine.cloudthree.excel.utils.CellRangeUtils.mergeCell;
 import static cn.viewshine.cloudthree.excel.utils.CellUtils.addOneRowHeadDataToCurrentSheet;
 
 /**
- * @author  常伟
- * @create 2019/8/11 10:35
- * @Email kmustchang@qq.com
- * @version  1.0
- * @description 这个表示写入Excel的上下文。
+ * 这个表示写入Excel的上下文。
+ * @author changwei[changwei@viewshine.cn]
+ * @version 1.0
  */
 public class WriteContext {
 
@@ -222,7 +220,7 @@ public class WriteContext {
      * 将当前workBook写入到文件中
      * @param fileName 文件名
      */
-    private void saveByFile(String fileName) {
+    private void saveByFile(String fileName) throws WriteExcelException {
         // You must close the OutputStream yourself. HSSF does not close it for you.
         try (FileOutputStream out = new FileOutputStream(fileName)) {
             workbook.write(out);
