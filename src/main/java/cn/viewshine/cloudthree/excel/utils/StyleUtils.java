@@ -23,9 +23,6 @@ public class StyleUtils {
         font.setFontHeightInPoints((short)12);
         result.setFont(font);
 
-        //填充效果
-        result.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-
         //对齐方式
         result.setAlignment(HorizontalAlignment.CENTER);
         result.setVerticalAlignment(VerticalAlignment.CENTER);
@@ -53,7 +50,8 @@ public class StyleUtils {
         font.setBold(true);
         result.setFont(font);
 
-        //设置背景颜色
+        //填充效果
+        result.setFillPattern(FillPatternType.SOLID_FOREGROUND);
         result.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.index);
         return result;
     }

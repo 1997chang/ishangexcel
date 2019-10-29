@@ -10,11 +10,8 @@ import java.util.*;
 import java.util.stream.IntStream;
 
 /**
+ * 完成Excel的写入操作
  * @author changwei[changwei@viewshine.cn]
- * @create: 2019/8/11 11:13
- * @email: kmustchang@qq.com
- * @version: 1.0
- * @Description: 表示写入Excel对象
  */
 public class WriteExcel {
 

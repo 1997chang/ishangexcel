@@ -4,9 +4,9 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>cn.viewshine.cloudthree</groupId>
+    <groupId>com.viewshine.cloudthree</groupId>
     <artifactId>ishangexcel</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
     <packaging>jar</packaging>
 
     <properties>
@@ -14,7 +14,28 @@
         <jdk.version>1.8</jdk.version>
     </properties>
 
+    <scm>
+        <url>https://github.com/1997chang/ishangexcel</url>
+        <connection>git@github.com:1997chang/ishangexcel.git</connection>
+    </scm>
+
+    <developers>
+        <developer>
+            <id>changwei</id>
+            <name>changwei</name>
+            <email>546613470@qq.com</email>
+        </developer>
+    </developers>
+
     <name>ishangexcel</name>
+
+    <!--配置deploy的地址路径-->
+    <distributionManagement>
+        <repository>
+            <id>3rd</id>
+            <url>http://120.78.81.100:8801/repository/nexus-3rd/</url>
+        </repository>
+    </distributionManagement>
 
     <dependencies>
 

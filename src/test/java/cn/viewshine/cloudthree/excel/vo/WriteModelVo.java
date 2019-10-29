@@ -7,38 +7,34 @@ import java.util.Date;
 
 /**
  * @author changwei[changwei@viewshine.cn]
- * @create: 2019/8/13 23:21
- * @email: kmustchang@qq.com
- * @version: 1.0
- * @Description:
  */
 public class WriteModelVo extends FatherVo {
 
-    @ExcelField(name = "姓名")
+    @ExcelField(name = {"威星表格","姓名"})
     private String name;
 
-    @ExcelField(name = "性别")
+    @ExcelField(name = {"威星表格","性别"})
     private Sex sex = Sex.MAN;
 
-    @ExcelField(name = "年龄")
+    @ExcelField(name = {"威星表格","年龄"})
     private int age;
 
-    @ExcelField(name = "年份")
+    @ExcelField(name = {"威星表格","年份"})
     private Integer year;
 
-    @ExcelField(name = "金钱",columnWidth = 40)
+    @ExcelField(name = {"威星表格","金钱"},columnWidth = 40)
     private BigDecimal money;
 
-    @ExcelField(name = "单价",format = "###0.00")
+    @ExcelField(name = {"威星表格","单价"},format = "###0.00")
     private BigDecimal price;
 
-    @ExcelField(name = "是否团员")
+    @ExcelField(name = {"威星表格","是否团员"})
     private Boolean tuanyuan;
 
-    @ExcelField(name = "出生日期")
+    @ExcelField(name = {"威星表格","出生日期"})
     private LocalDateTime localDateTime;
 
-    @ExcelField(name = "注册时间",format = "yyyy-MM-dd")
+    @ExcelField(name = {"威星表格","注册时间"},format = "yyyy-MM-dd")
     private Date date;
 
     public WriteModelVo(String id,String name, Sex sex, int age, Integer year, BigDecimal money, BigDecimal price,

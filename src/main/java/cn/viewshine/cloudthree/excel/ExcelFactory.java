@@ -56,7 +56,6 @@ public final class ExcelFactory {
      * 用于将Map数据写入到Excel文件中。
      * @param data Key：Sheet表格名称，Value：Sheet对应的写入数据内容。用于写入多个Sheet
      * @param outputStream 表示写入数据的输出流
-     * @param xssf 表示是否是XSSF类型的文件，是否是XLSX文件
      */
     public static void writeExcel(Map<String, List> data, OutputStream outputStream, boolean xssf) {
         WriteExcel.wirteExcelByStream(data, outputStream, xssf);
