@@ -22,11 +22,9 @@ import static cn.viewshine.cloudthree.excel.utils.CellRangeUtils.mergeCell;
 import static cn.viewshine.cloudthree.excel.utils.CellUtils.addOneRowHeadDataToCurrentSheet;
 
 /**
- * @author  常伟
- * @create 2019/8/11 10:35
- * @Email kmustchang@qq.com
- * @version  1.0
- * @description 这个表示写入Excel的上下文。
+ * 这个表示写入Excel的上下文。
+ * @author changwei[changwei@viewshine.cn]
+ * @version 1.0
  */
 public class WriteContext {
 
@@ -222,7 +220,7 @@ public class WriteContext {
      * 将当前workBook写入到文件中
      * @param fileName 文件名
      */
-    private void saveByFile(String fileName) {
+    private void saveByFile(String fileName) throws WriteExcelException {
         // You must close the OutputStream yourself. HSSF does not close it for you.
         try (FileOutputStream out = new FileOutputStream(fileName)) {
             workbook.write(out);

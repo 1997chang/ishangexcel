@@ -5,10 +5,8 @@ import org.apache.poi.ss.usermodel.IndexedColors;
 import org.apache.poi.ss.usermodel.VerticalAlignment;
 
 /**
- * @Description: 用于表示用户自定义的单元格的样式
- * @Author: ChangWei
- * @Email: changwei@viewshine.cn
- * @Date: 2019/8/15
+ * 用于表示用户自定义的单元格的样式
+ * @author changwei[changwei@viewshine.cn]
  */
 public class CellStyle {
 

@@ -8,13 +8,13 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * @author: 常伟
- * @create: 2019/8/11 20:19
- * @email: kmustchang@qq.com
- * @version: 1.0
- * @Description: 表示单元格合并范围
+ * 表示单元格合并范围
+ * @author changwei[changwei@viewshine.cn]
+ * @version 1.0
  */
 public class CellRangeUtils {
+
+    private CellRangeUtils() {}
 
     /**
      * 合并单元格

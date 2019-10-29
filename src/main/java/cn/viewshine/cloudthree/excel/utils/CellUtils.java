@@ -14,13 +14,12 @@ import java.util.List;
 import java.util.stream.IntStream;
 
 /**
- * @author: 常伟
- * @create: 2019/8/15 21:15
- * @email: kmustchang@qq.com
- * @version: 1.0
- * @Description:
+ * @author changwei[changwei@viewshine.cn]
+ * @version 1.0
  */
 public class CellUtils {
+
+    private CellUtils() {}
 
     /**
      * 向当前Sheet中写入主要内容数据

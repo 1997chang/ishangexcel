@@ -1,7 +1,7 @@
 package cn.viewshine.cloudthree.excel.vo;
 
 /**
- * 作者: 常伟
+ * 作者 changwei[changwei@viewshine.cn]
  * 创建时间: 2019/8/13 23:25
  * 邮箱: kmustchang@qq.com
  * 功能:

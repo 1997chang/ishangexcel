@@ -13,9 +13,7 @@ import java.util.List;
 
 /**
  * 这个表示一列的属性
- * @author ChangWei
- * @Email changwei@viewshine.cn
- * @create 2019-08-17
+ * @author changwei[changwei@viewshine.cn]
  */
 public class ColumnProperty {
 

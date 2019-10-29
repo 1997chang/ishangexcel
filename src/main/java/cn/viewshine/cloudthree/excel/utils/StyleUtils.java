@@ -3,12 +3,12 @@ package cn.viewshine.cloudthree.excel.utils;
 import org.apache.poi.ss.usermodel.*;
 
 /**
- * @Description:
- * @Author: ChangWei
- * @Email: changwei@viewshine.cn
- * @Date: 2019/8/15
+ * 单元格的样式工具类
+ * @author changwei[changwei@viewshine.cn]
  */
 public class StyleUtils {
+
+    private StyleUtils() { }
 
     /**
      * 表示公共单元格样式

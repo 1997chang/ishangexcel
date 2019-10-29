@@ -15,13 +15,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * @author: 常伟
- * @create: 2019/8/13 23:15
- * @email: kmustchang@qq.com
- * @version: 1.0
- * @Description:
+ * @author changwei[changwei@viewshine.cn]
+ * @version 1.0
  */
 public class FieldUtils {
+
+    private FieldUtils() { }
 
     public static CellType getCellTypeByField(Field field) {
         Type genericType = field.getGenericType();

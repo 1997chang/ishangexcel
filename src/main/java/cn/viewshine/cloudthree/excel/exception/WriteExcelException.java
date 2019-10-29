@@ -1,11 +1,9 @@
 package cn.viewshine.cloudthree.excel.exception;
 
 /**
- * @author: 常伟
- * @create: 2019/8/11 10:48
- * @email: kmustchang@qq.com
+ * 表示写入Excel时候的异常
+ * @author changwei[changwei@viewshine.cn]
  * @version: 1.0
- * @Description: 表示写入Excel时候的异常
  */
 public class WriteExcelException extends IllegalArgumentException {
 

@@ -10,7 +10,7 @@ import java.util.*;
 import java.util.stream.IntStream;
 
 /**
- * @author: 常伟
+ * @author changwei[changwei@viewshine.cn]
  * @create: 2019/8/11 11:13
  * @email: kmustchang@qq.com
  * @version: 1.0
