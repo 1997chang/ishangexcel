@@ -23,7 +23,7 @@ import java.util.stream.IntStream;
 public class WriteExcelTest {
 
     public void init(List<WriteModelVo> data) {
-        for (int i = 0; i < 10000; i++) {
+        for (int i = 0; i < 1000; i++) {
             LocalDateTime now = LocalDateTime.now();
             Sex sex;
             boolean tuanyuan;
@@ -41,6 +41,40 @@ public class WriteExcelTest {
         }
     }
 
+    private void initMap(List<List<String>> contentData) {
+        for (int i = 0; i < 1000; i++) {
+            List<String> itemData = new ArrayList<>();
+            itemData.add(String.valueOf(i));
+            LocalDateTime now = LocalDateTime.now();
+            Sex sex;
+            boolean tuanyuan;
+            if ((i & 1) == 1) {
+                sex = Sex.MAN;
+                tuanyuan = true;
+            } else {
+                sex = Sex.WOMAN;
+                tuanyuan = false;
+            }
+            BigDecimal money = BigDecimal.valueOf(ThreadLocalRandom.current().nextFloat());
+            itemData.add("姓名" + i);
+            itemData.add(sex.name());
+            itemData.add(String.valueOf(20 + i));
+            itemData.add(String.valueOf(tuanyuan));
+            itemData.add(String.valueOf(money.doubleValue()));
+            contentData.add(itemData);
+        }
+    }
+
+    private void initHeadMap(List<List<String>> headMap) {
+        List<String> id = Arrays.asList("威星", "ID");
+        List<String> name = Arrays.asList("威星", "姓名");
+        List<String> sex = Arrays.asList("威星", "性别");
+        List<String> age = Arrays.asList("威星", "年龄");
+        List<String> tuanyuan = Arrays.asList("威星", "是否团员");
+        List<String> money = Arrays.asList("威星", "收入");
+        headMap.addAll(Arrays.asList(id, name, sex, age, tuanyuan, money));
+    }
+
     /**
      * 单Sheet也写入
      */
@@ -51,6 +85,16 @@ public class WriteExcelTest {
         long l = System.currentTimeMillis();
         ExcelFactory.writeExcel(data,"D:/test1.xlsx");
         System.out.println(System.currentTimeMillis()-l);
+    }
+
+    @Test
+    public void writeExcelByMap() {
+        List<List<String>> contentData = new ArrayList<>(1000);
+        initMap(contentData);
+        List<List<String>> headName = new ArrayList<>(6);
+        initHeadMap(headName);
+        ExcelFactory.writeExcel(Collections.singletonMap("sheet1", contentData), Collections.singletonMap("sheet1",
+                headName), "D:/testmap.xlsx");
     }
 
     @Test
@@ -119,6 +163,7 @@ public class WriteExcelTest {
             Student student = new Student();
             student.setId(10000L+i);
             student.setChineseScore(ThreadLocalRandom.current().nextInt());
+
             student.setMathematicScore(ThreadLocalRandom.current().nextInt());
             student.setName("学生No."+i);
             studentList.add(student);

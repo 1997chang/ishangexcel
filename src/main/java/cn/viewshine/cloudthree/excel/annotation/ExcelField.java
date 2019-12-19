@@ -40,4 +40,10 @@ public @interface ExcelField {
      * @return 单元格的宽度
      */
     int columnWidth() default 20;
+
+    /**
+     * 表示是否自动调整列的宽度
+     * @return
+     */
+    boolean columnWidthAuto() default false;
 }

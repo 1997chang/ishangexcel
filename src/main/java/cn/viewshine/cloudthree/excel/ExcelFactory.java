@@ -31,15 +31,20 @@ public final class ExcelFactory {
      * @param fileName 表示将数据写入到那个文件中
      */
     public static void writeExcel(Map<String, List> data, String fileName) {
-        boolean xssf = true;
-        if (fileName.endsWith(".xlsx")) {
-            xssf = true;
-        } else if (fileName.endsWith(".xls")) {
-            xssf = false;
-        } else {
-            throw new WriteExcelException("写入的文件名称不合法，后缀是xlsx或者xls");
-        }
+        boolean xssf = getFileType(fileName);
         WriteExcel.writeExcelByFileName(data, fileName, xssf);
+    }
+
+    /**
+     * 对Excel数据进行导出，这里进行的是多Sheet导出
+     * @param data 表示导出的数据内容，每一个Sheet对应一个MAP
+     * @param headName 表示各个Sheet中表格的表头
+     * @param fileName 表示文件名称
+     */
+    public static void writeExcel(Map<String, List<List<String>>> data, Map<String, List<List<String>>> headName,
+                                  String fileName) {
+        boolean xssf = getFileType(fileName);
+        WriteExcel.writeExcelByFileName(data, headName, fileName, xssf);
     }
 
     /**
@@ -124,6 +129,21 @@ public final class ExcelFactory {
             throw new WriteExcelException("文件名称解析错误，fileName: " + fileName.toString(), e);
         } catch (IOException e) {
             throw new WriteExcelException("获取response的输出流错误", e);
+        }
+    }
+
+    /**
+     * 用于获取文件的类型，如果是xlsx表示为XSSF模式，如果是xls表示为非XSSF模式
+     * @param fileName 表示文件名称
+     * @return 是否是XSSF模式
+     */
+    private static boolean getFileType(String fileName){
+        if (fileName.endsWith(".xlsx")) {
+            return true;
+        } else if (fileName.endsWith(".xls")) {
+            return false;
+        } else {
+            throw new WriteExcelException("写入的文件名称不合法，后缀是xlsx或者xls");
         }
     }
 

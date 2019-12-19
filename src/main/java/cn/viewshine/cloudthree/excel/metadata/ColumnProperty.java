@@ -37,6 +37,9 @@ public class ColumnProperty {
      */
     private CellType cellType;
 
+    /**
+     * 表示列的宽度
+     */
     private int columnWidth;
 
     public ColumnProperty() {

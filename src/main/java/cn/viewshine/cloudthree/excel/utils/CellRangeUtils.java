@@ -24,7 +24,7 @@ public class CellRangeUtils {
      */
     public static void mergeCell(int startRow, int rowMaxCount, List<List<String>> headList, Sheet sheet) {
         List<CellRangeAddress> cellRangeList = getCellRangeList(startRow, rowMaxCount, headList);
-        cellRangeList.stream().forEach(sheet::addMergedRegion);
+        cellRangeList.forEach(sheet::addMergedRegion);
     }
 
     /**

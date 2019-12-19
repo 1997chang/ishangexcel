@@ -78,4 +78,14 @@ public class WriteExcel {
         });
         return result;
     }
+
+    public static void writeExcelByFileName(Map<String, List<List<String>>> data, Map<String, List<List<String>>> headName, String fileName, boolean xssf) {
+        //1.验证表头的列数与数据内容的列数是否一致
+        if (data.size() != 0 && ! Objects.equals(data.get(0).size(), headName.size())) {
+            throw new WriteExcelException("表格列头个数与表格数据内容个数不一致");
+        }
+        //创建写Excel的上下文信息，包括WorkBook等
+        WriteContext writeContext=new WriteContext(xssf);
+        writeContext.write(data, headName, fileName);
+    }
 }

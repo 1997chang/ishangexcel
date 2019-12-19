@@ -79,9 +79,12 @@ public class WriteContext {
      * @param xssf 当为true的时候，创建一个SXSSF的workBook，当为false时候，创建一个HSSF
      */
     public WriteContext(boolean xssf, Map<String, Class> sheetClass) {
-        this.xssf = xssf;
+        this(xssf);
         this.sheetClass = sheetClass;
+    }
 
+    public WriteContext(boolean xssf) {
+        this.xssf = xssf;
         //1.创建workBook，用于写入文件内容
         if (xssf) {
             workbook = new SXSSFWorkbook(DEFAULT_WINDOWS_COUNT);
@@ -93,7 +96,6 @@ public class WriteContext {
                 throw new WriteExcelException("使用HSSF创建Excel文件失败。。。");
             }
         }
-
         //设置样式
         defaultHeadCellStyle = StyleUtils.buildHeadCellStyle(workbook);
         defaultContentCellStyle = StyleUtils.buildContentCellStyle(workbook);
@@ -110,6 +112,27 @@ public class WriteContext {
         writeAllDataToExcel(data);
         //这里使用try-with-resource
         saveByFile(fileName);
+    }
+
+    /**
+     * 用于将数据内容以及表格头数据内容写入到指定文件中
+     * @param data 表格的数据内容
+     * @param headName 表格列头的数据
+     * @param fileName 写入的文件
+     */
+    public void write(Map<String, List<List<String>>> data, Map<String, List<List<String>>> headName, String fileName) {
+        writeAllDataToExcel(data, headName);
+        saveByFile(fileName);
+    }
+
+    private void writeAllDataToExcel(Map<String, List<List<String>>> data, Map<String, List<List<String>>> headName) {
+        data.forEach((sheetName, contentData) -> {
+            //1.为每一个List数据，创建一个Sheet
+            Sheet currentSheet = workbook.createSheet(sheetName);
+            IntStream.range(0, headName.size()).forEach(i -> currentSheet.setColumnWidth(i, 20 * 256));
+            writeHeadToSheet(currentSheet, headName.get(sheetName));
+            writeContentToSheet(currentSheet, contentData);
+        });
     }
 
     /**
@@ -158,13 +181,7 @@ public class WriteContext {
             return;
         }
         //确定要写入的行数
-        int lastRowNum = sheet.getLastRowNum();
-        //如果当前行不等于0，或者第零行数据不为空的话，让行数+1.因为Sheet返回的是最后有数据的一行下标
-        boolean rowNeedPlusOne = lastRowNum !=0 || sheet.getRow(0) != null;
-        if (rowNeedPlusOne) {
-            lastRowNum++;
-        }
-
+        int lastRowNum = computeLastRow(sheet);
         //遍历每一行的数据内容
         for (Object data : dataList) {
             Row row = sheet.createRow(lastRowNum++);
@@ -177,26 +194,53 @@ public class WriteContext {
     }
 
     /**
+     * 用于向Sheet中写入数据内容
+     * @param sheet 写入的Sheet表格对象
+     * @param sheetData 写入的数据内容
+     */
+    private void writeContentToSheet(Sheet sheet, List<List<String>> sheetData) {
+        int lastRowNum = computeLastRow(sheet);
+        //遍历每一行的数据内容
+        for (List<String> data: sheetData) {
+            Row row = sheet.createRow(lastRowNum++);
+            //遍历所有的列
+            IntStream.range(0, data.size()).forEach(i -> {
+                Cell cell = row.createCell(i, CellType.STRING);
+                cell.setCellStyle(getCurrentActiveContentCellStyle());
+                cell.setCellValue(data.get(i));
+            });
+        }
+    }
+
+    /**
      * 用于完成在一个Sheet中写入文件头内容
      * @param sheet 表示当前写入的Sheet表格
      * @param fieldList 表示一个Sheet中所有列的属性
      */
     private void writeHeadToSingleSheet(Sheet sheet, List<ColumnProperty> fieldList) {
-        //1.获取所有字段在ExcelField注解中的value值,从而合并单元格
-        List<List<String>> headList = fieldList.stream().map(ColumnProperty::getHeadString).collect(Collectors.toList());
+        //获取所有字段在ExcelField注解中的value值,从而合并单元格
+        writeHeadToSheet(sheet, fieldList.stream().map(ColumnProperty::getHeadString).collect(Collectors.toList()));
+    }
+
+    /**
+     * 用于向指定的Sheet表格中
+     * @param sheet
+     * @param headName
+     */
+    private void writeHeadToSheet(Sheet sheet, List<List<String>> headName) {
         //列标题中最大行数，以及开始行
-        int rowMaxCount = headList.parallelStream().mapToInt(List::size).max().orElse(0);
+        int rowMaxCount = headName.parallelStream().mapToInt(List::size).max().orElse(0);
         int startRow = sheet.getLastRowNum();
 
         //2.合并Head中对应的单元格
         if (rowMaxCount > 1) {
-            mergeCell(startRow, rowMaxCount, headList, sheet);
+            mergeCell(startRow, rowMaxCount, headName, sheet);
         }
 
         //3.填充HEAD数据头内容
         IntStream.range(0, rowMaxCount).forEach(i -> {
             Row row = sheet.createRow(startRow + i);
-            addOneRowHeadDataToCurrentSheet(row, headList.stream().map(list->list.get(i)).collect(Collectors.toList()), getCurrentActiveHeadCellStyle());
+            addOneRowHeadDataToCurrentSheet(row, headName.stream().map(list->list.get(i)).collect(Collectors.toList()), getCurrentActiveHeadCellStyle());
         });
     }
 
@@ -231,7 +275,7 @@ public class WriteContext {
             try {
                 if (xssf) {
                     //Note that SXSSF allocates temporary files that you must always clean up explicitly, by calling the dispose method.
-                    //注意：如果是SXSSF的话，必须显示电泳workbook的dispose方法
+                    //注意：如果是SXSSF的话，必须显示调用workbook的dispose方法
                     ((SXSSFWorkbook)workbook).dispose();
                 }
                 if (workbook != null) {
@@ -273,4 +317,21 @@ public class WriteContext {
             }
         }
     }
+
+    /**
+     * 用于计算当前Sheet中最后一个有效行
+     * @param sheet 当前sheet表格
+     * @return 行数
+     */
+    private static int computeLastRow(Sheet sheet) {
+        //确定要写入的行数
+        int lastRowNum = sheet.getLastRowNum();
+        //如果当前行不等于0，或者第零行数据不为空的话，让行数+1.因为Sheet返回的是最后有数据的一行下标
+        boolean rowNeedPlusOne = lastRowNum !=0 || sheet.getRow(0) != null;
+        if (rowNeedPlusOne) {
+            lastRowNum++;
+        }
+        return lastRowNum;
+    }
+
 }
