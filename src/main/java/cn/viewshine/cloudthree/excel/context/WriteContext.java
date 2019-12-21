@@ -13,6 +13,8 @@ import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -266,6 +268,12 @@ public class WriteContext {
      */
     private void saveByFile(String fileName) throws WriteExcelException {
         // You must close the OutputStream yourself. HSSF does not close it for you.
+        try {
+            Files.createDirectories(Paths.get(fileName).getParent());
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new WriteExcelException("文件目录不存在");
+        }
         try (FileOutputStream out = new FileOutputStream(fileName)) {
             workbook.write(out);
         } catch (IOException e) {
