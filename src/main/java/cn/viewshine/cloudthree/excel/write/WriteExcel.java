@@ -17,6 +17,8 @@ public class WriteExcel {
 
     /**
      * 用于将data数据写入到Excel文件中，可以使用try-with-resource实现自动关闭流
+     *
+     * 注意：这种方式针对于使用@ExcelField注解所在的类
      * @param data 写入Excel文件中的数据
      * @param fileName 文件的名称
      * @param xssf 是否是XSSF文件格式
@@ -34,6 +36,8 @@ public class WriteExcel {
 
     /**
      * 用于将Data数据写入到Excel文件流中，必须手动关闭输出流
+     *
+     * 注意：这种方式针对于使用@ExcelField注解所在的类
      * @param data
      * @param outputStream
      * @param xssf
@@ -42,6 +46,34 @@ public class WriteExcel {
         //验证所有Sheet表格名称是否合法，并且完成sheet表名与Class的对应关系
         WriteContext writeContext = new WriteContext(xssf, validationWriteData(data.entrySet()));
         writeContext.write(data, outputStream);
+    }
+
+    /**
+     * 用于将数据写入到文件中，这种方式针对于不继承@ExcelField注解的类。
+     * @param data 准备写入的数据内容
+     * @param headName 写入的头部分数据
+     * @param fileName 文件名称
+     * @param xssf 是否是2007的xlsx格式数据
+     */
+    public static void writeExcelByFileName(Map<String, List<List<String>>> data, Map<String, List<List<String>>> headName, String fileName, boolean xssf) {
+        Objects.requireNonNull(data, "表格数据不能为空");
+        if (Objects.nonNull(headName)) {
+            //如果headName不为空，一定要和data中的个数相同
+            if (! Objects.equals(data.size(), headName.size())) {
+                throw new WriteExcelException("表格数据的Sheet页数与表格头的Sheet页数不一致");
+            }
+            data.forEach((key, value) -> {
+                List<List<String>> headNameInSheet = headName.get(key);
+                Objects.requireNonNull(headNameInSheet, "表格数据的Sheet名称与表格头的Sheet名称不一致");
+                boolean columnDifferent = CollectionUtils.isNotEmpty(value) && value.get(0).size() != headNameInSheet.size();
+                if (columnDifferent) {
+                    throw new WriteExcelException("表格列头个数与表格数据内容个数不一致");
+                }
+            });
+        }
+        //创建写Excel的上下文信息，包括WorkBook等
+        WriteContext writeContext=new WriteContext(xssf, fileName);
+        writeContext.write(data, headName, fileName);
     }
 
     /**
@@ -77,25 +109,5 @@ public class WriteExcel {
             }
         });
         return result;
-    }
-
-    public static void writeExcelByFileName(Map<String, List<List<String>>> data, Map<String, List<List<String>>> headName, String fileName, boolean xssf) {
-        //1.验证表头的列数与数据内容的列数是否一致
-        Objects.requireNonNull(data, "表格数据不能为空");
-        Objects.requireNonNull(headName, "表头数据不能为空");
-        if (! Objects.equals(data.size(), headName.size())) {
-
-            throw new WriteExcelException("表格数据的Sheet页数与表格头的Sheet页数不一致");
-        }
-        data.forEach((key, value) -> {
-            List<List<String>> headNameInSheet = headName.get(key);
-            Objects.requireNonNull(headNameInSheet, "表格数据的Sheet名称与表格头的Sheet名称不一致");
-            if (value.size() != 0 && ! Objects.equals(value.get(0).size(),headNameInSheet.size())) {
-                throw new WriteExcelException("表格列头个数与表格数据内容个数不一致");
-            }
-        });
-        //创建写Excel的上下文信息，包括WorkBook等
-        WriteContext writeContext=new WriteContext(xssf);
-        writeContext.write(data, headName, fileName);
     }
 }

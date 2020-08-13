@@ -7,9 +7,14 @@ import cn.viewshine.cloudthree.excel.utils.FieldUtils;
 import cn.viewshine.cloudthree.excel.utils.StyleUtils;
 import net.sf.cglib.beans.BeanMap;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.streaming.SXSSFSheet;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbookFactory;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -17,6 +22,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -34,6 +40,10 @@ public class WriteContext {
      * 如果创建的是SXSSF的文件格式，默认的滑动窗口大小为200
      */
     private static final int DEFAULT_WINDOWS_COUNT = 200;
+
+    private static final int XSSF_MAX_COUNT_PER_SHEET = 1_000_000;
+
+    private static final int NOT_XSSF_MAX_XOUNT_PRE_SHEET = 60_000;
 
     /**
      * 表示写入的WorkBook
@@ -81,18 +91,32 @@ public class WriteContext {
      * @param xssf 当为true的时候，创建一个SXSSF的workBook，当为false时候，创建一个HSSF
      */
     public WriteContext(boolean xssf, Map<String, Class> sheetClass) {
-        this(xssf);
+        this(xssf, (String) null);
         this.sheetClass = sheetClass;
     }
 
-    public WriteContext(boolean xssf) {
+    public WriteContext(boolean xssf, String filePath) {
         this.xssf = xssf;
+        boolean fileExits = Objects.nonNull(filePath) && Files.exists(Paths.get(filePath));
         //1.创建workBook，用于写入文件内容
         if (xssf) {
-            workbook = new SXSSFWorkbook(DEFAULT_WINDOWS_COUNT);
+            XSSFWorkbook exitsWorkBook = null;
+            if (fileExits) {
+                try {
+                    exitsWorkBook = XSSFWorkbookFactory.createWorkbook(new File(filePath), false);
+                } catch (IOException | InvalidFormatException e) {
+                    e.printStackTrace();
+                    throw new WriteExcelException("使用XSSF打开已存在文件错误.");
+                }
+            }
+            workbook = new SXSSFWorkbook(exitsWorkBook, DEFAULT_WINDOWS_COUNT);
         } else {
             try {
-                workbook = WorkbookFactory.create(xssf);
+                File exitsFile = null;
+                if (fileExits) {
+                    exitsFile = new File(filePath);
+                }
+                workbook = WorkbookFactory.create(exitsFile);
             } catch (IOException e) {
                 e.printStackTrace();
                 throw new WriteExcelException("使用HSSF创建Excel文件失败。。。");
@@ -128,13 +152,24 @@ public class WriteContext {
     }
 
     private void writeAllDataToExcel(Map<String, List<List<String>>> data, Map<String, List<List<String>>> headName) {
-        data.forEach((sheetName, contentData) -> {
-            //1.为每一个List数据，创建一个Sheet
-            Sheet currentSheet = workbook.createSheet(sheetName);
-            IntStream.range(0, headName.size()).forEach(i -> currentSheet.setColumnWidth(i, 20 * 256));
-            writeHeadToSheet(currentSheet, headName.get(sheetName));
-            writeContentToSheet(currentSheet, contentData);
-        });
+        data.entrySet().stream()
+                .filter(entry -> CollectionUtils.isNotEmpty(entry.getValue()))
+                .forEach(entry -> {
+                    final String sheetName = entry.getKey();
+                    Sheet currentSheet = workbook.getSheet(sheetName);
+                    boolean createSheet = Objects.isNull(currentSheet) ||
+                            exceedSheetMaxCount(computeLastRow(currentSheet), entry.getValue().size());
+                    if (createSheet) {
+                        Sheet sheet = workbook.createSheet(getSheetName(sheetName));
+                        //设置列宽以及表头数据
+                        IntStream.range(0, entry.getValue().get(0).size()).forEach(i -> sheet.setColumnWidth(i, 20 * 256));
+                        if (Objects.nonNull(headName) && CollectionUtils.isNotEmpty(headName.get(sheetName))) {
+                            writeHeadToSheet(sheet, headName.get(sheetName));
+                        }
+                        currentSheet = sheet;
+                    }
+                    writeContentToSheet(currentSheet, entry.getValue());
+                });
     }
 
     /**
@@ -274,14 +309,20 @@ public class WriteContext {
             e.printStackTrace();
             throw new WriteExcelException("文件目录不存在");
         }
-        try (FileOutputStream out = new FileOutputStream(fileName)) {
+
+        File file = new File(fileName);
+        boolean fileExits = file.exists();
+        if (fileExits) {
+            file = new File(getBackFileName(fileName));
+        }
+        try (FileOutputStream out = new FileOutputStream(file)) {
             workbook.write(out);
         } catch (IOException e) {
             e.printStackTrace();
             throw new WriteExcelException("写入文件出现错误，方法：saveByFile", e);
         } finally {
             try {
-                if (xssf) {
+                if (workbook instanceof SXSSFWorkbook) {
                     //Note that SXSSF allocates temporary files that you must always clean up explicitly, by calling the dispose method.
                     //注意：如果是SXSSF的话，必须显示调用workbook的dispose方法
                     ((SXSSFWorkbook)workbook).dispose();
@@ -293,6 +334,10 @@ public class WriteContext {
                 e.printStackTrace();
                 throw new WriteExcelException("关闭操作出现问题", e);
             }
+        }
+        if (fileExits) {
+            new File(fileName).delete();
+            file.renameTo(new File(fileName));
         }
     }
 
@@ -331,15 +376,52 @@ public class WriteContext {
      * @param sheet 当前sheet表格
      * @return 行数
      */
-    private static int computeLastRow(Sheet sheet) {
+    private static int computeLastRow(final Sheet sheet) {
         //确定要写入的行数
         int lastRowNum = sheet.getLastRowNum();
+        if (lastRowNum == 0 && sheet instanceof SXSSFSheet) {
+            lastRowNum = ((SXSSFWorkbook)sheet.getWorkbook()).getXSSFWorkbook().getSheet(sheet.getSheetName()).getLastRowNum();
+        }
         //如果当前行不等于0，或者第零行数据不为空的话，让行数+1.因为Sheet返回的是最后有数据的一行下标
         boolean rowNeedPlusOne = lastRowNum !=0 || sheet.getRow(0) != null;
         if (rowNeedPlusOne) {
             lastRowNum++;
         }
         return lastRowNum;
+    }
+
+    /**
+     * 确定当前Sheet是否超过最大单页Sheet大小
+     * @param currentRow 当前Sheet的大小
+     * @param dataSize 写入数据的个数
+     * @return true 超过，需要分页，false，可以直接写入
+     */
+    private boolean exceedSheetMaxCount(int currentRow, int dataSize) {
+        return xssf ? currentRow + dataSize > XSSF_MAX_COUNT_PER_SHEET :
+                currentRow + dataSize > NOT_XSSF_MAX_XOUNT_PRE_SHEET;
+    }
+
+    /**
+     * 用于确定最终的sheet的名称
+     * @param baseSheetName 基本的sheet名称
+     * @return
+     */
+    private String getSheetName(String baseSheetName) {
+        String sheetName = baseSheetName;
+        while(Objects.nonNull(workbook.getSheet(sheetName))) {
+            sheetName += "1";
+        }
+        return sheetName;
+    }
+
+    /**
+     * 如果文件存在得到备份文件名
+     * @param fileName
+     * @return
+     */
+    private static String getBackFileName(String fileName) {
+        int suffix = fileName.lastIndexOf(".");
+        return fileName.substring(0, suffix) +"_back." + fileName.substring(suffix + 1);
     }
 
 }
