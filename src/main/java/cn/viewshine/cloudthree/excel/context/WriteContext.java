@@ -153,7 +153,6 @@ public class WriteContext {
 
     private void writeAllDataToExcel(Map<String, List<List<String>>> data, Map<String, List<List<String>>> headName) {
         data.entrySet().stream()
-                .filter(entry -> CollectionUtils.isNotEmpty(entry.getValue()))
                 .forEach(entry -> {
                     final String sheetName = entry.getKey();
                     Sheet currentSheet = workbook.getSheet(sheetName);
