@@ -161,7 +161,7 @@ public class WriteContext {
                     if (createSheet) {
                         Sheet sheet = workbook.createSheet(getSheetName(sheetName));
                         //设置列宽以及表头数据
-                        IntStream.range(0, entry.getValue().get(0).size()).forEach(i -> sheet.setColumnWidth(i, 20 * 256));
+                        IntStream.range(0, headName.size()).forEach(i -> sheet.setColumnWidth(i, 20 * 256));
                         if (Objects.nonNull(headName) && CollectionUtils.isNotEmpty(headName.get(sheetName))) {
                             writeHeadToSheet(sheet, headName.get(sheetName));
                         }
