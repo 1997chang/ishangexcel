@@ -72,7 +72,7 @@ public class WriteExcel {
             });
         }
         //创建写Excel的上下文信息，包括WorkBook等
-        WriteContext writeContext=new WriteContext(xssf, fileName);
+        WriteContext writeContext = new WriteContext(xssf, fileName);
         writeContext.write(data, headName, fileName);
     }
 

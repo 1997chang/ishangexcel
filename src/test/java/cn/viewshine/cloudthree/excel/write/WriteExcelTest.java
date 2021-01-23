@@ -8,6 +8,7 @@ import cn.viewshine.cloudthree.excel.vo.WriteModelVo;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.*;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.FileOutputStream;
@@ -24,6 +25,7 @@ import java.util.stream.IntStream;
 /**
  * @author changwei[changwei@viewshine.cn]
  */
+@Ignore
 public class WriteExcelTest {
 
     public void init(List<WriteModelVo> data) {

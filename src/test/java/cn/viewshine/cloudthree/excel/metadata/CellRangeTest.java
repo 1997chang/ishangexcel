@@ -3,6 +3,7 @@ package cn.viewshine.cloudthree.excel.metadata;
 import cn.viewshine.cloudthree.excel.utils.CellRangeUtils;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -13,6 +14,7 @@ import java.util.List;
  * 单元格合并测试类
  * @author  changwei[changwei@viewshine.cn]
  */
+@Ignore
 public class CellRangeTest {
 
     /**

@@ -109,7 +109,7 @@ public class WriteContext {
                     throw new WriteExcelException("使用XSSF打开已存在文件错误.");
                 }
             }
-            workbook = new SXSSFWorkbook(exitsWorkBook, DEFAULT_WINDOWS_COUNT);
+            workbook = new SXSSFWorkbook(exitsWorkBook, DEFAULT_WINDOWS_COUNT, true);
         } else {
             try {
                 File exitsFile = null;
@@ -234,7 +234,7 @@ public class WriteContext {
      * @param sheet 写入的Sheet表格对象
      * @param sheetData 写入的数据内容
      */
-    private void writeContentToSheet(Sheet sheet, List<List<String>> sheetData) {
+    public void writeContentToSheet(Sheet sheet, List<List<String>> sheetData) {
         int lastRowNum = computeLastRow(sheet);
         //遍历每一行的数据内容
         for (List<String> data: sheetData) {
@@ -246,6 +246,26 @@ public class WriteContext {
                 cell.setCellValue(data.get(i));
             });
         }
+    }
+
+    /**
+     * 写入一行数据到指定的sheet中，他并不会保存文件
+     * @param sheetName
+     * @param sheetData
+     */
+    public void writeContentToSheet(String sheetName, List<String> sheetData) {
+        Sheet sheet = workbook.getSheet(sheetName);
+        if (Objects.isNull(sheet)) {
+            sheet = workbook.createSheet(sheetName);
+        }
+        int lastRowNum = computeLastRow(sheet);
+        Row row = sheet.createRow(lastRowNum++);
+        //遍历所有的列
+        IntStream.range(0, sheetData.size()).forEach(i -> {
+            Cell cell = row.createCell(i, CellType.STRING);
+            cell.setCellStyle(getCurrentActiveContentCellStyle());
+            cell.setCellValue(sheetData.get(i));
+        });
     }
 
     /**
@@ -263,7 +283,7 @@ public class WriteContext {
      * @param sheet
      * @param headName
      */
-    private void writeHeadToSheet(Sheet sheet, List<List<String>> headName) {
+    public void writeHeadToSheet(Sheet sheet, List<List<String>> headName) {
         //列标题中最大行数，以及开始行
         int rowMaxCount = headName.parallelStream().mapToInt(List::size).max().orElse(0);
         int startRow = sheet.getLastRowNum();
@@ -278,6 +298,21 @@ public class WriteContext {
             Row row = sheet.createRow(startRow + i);
             addOneRowHeadDataToCurrentSheet(row, headName.stream().map(list->list.get(i)).collect(Collectors.toList()), getCurrentActiveHeadCellStyle());
         });
+    }
+
+    /**
+     * 写入Excel头到指定sheetName中
+     * @param sheetName
+     * @param headName
+     */
+    public void writeHeadToSheet(String sheetName, List<List<String>> headName) {
+        Sheet sheet = workbook.getSheet(sheetName);
+        if (Objects.isNull(sheet)) {
+            sheet = workbook.createSheet(sheetName);
+            if (CollectionUtils.isNotEmpty(headName)) {
+                writeHeadToSheet(sheet, headName);
+            }
+        }
     }
 
     /**
@@ -300,7 +335,7 @@ public class WriteContext {
      * 将当前workBook写入到文件中
      * @param fileName 文件名
      */
-    private void saveByFile(String fileName) throws WriteExcelException {
+    public void saveByFile(String fileName) throws WriteExcelException {
         // You must close the OutputStream yourself. HSSF does not close it for you.
         try {
             Files.createDirectories(Paths.get(fileName).getParent());

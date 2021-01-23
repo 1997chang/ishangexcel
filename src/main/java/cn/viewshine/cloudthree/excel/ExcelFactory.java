@@ -136,7 +136,7 @@ public final class ExcelFactory {
      * @param fileName 表示文件名称
      * @return 是否是XSSF模式
      */
-    private static boolean getFileType(String fileName){
+    static boolean getFileType(String fileName){
         if (fileName.endsWith(".xlsx")) {
             return true;
         } else if (fileName.endsWith(".xls")) {

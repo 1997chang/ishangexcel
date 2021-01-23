@@ -4,6 +4,7 @@ import cn.viewshine.cloudthree.excel.utils.FieldUtils;
 import cn.viewshine.cloudthree.excel.vo.WriteModelVo;
 import org.apache.poi.ss.usermodel.CellType;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import java.lang.reflect.Field;
 
@@ -11,6 +12,7 @@ import java.lang.reflect.Field;
  * 单元格样式测试类
  * @author changwei[changwei@viewshine.cn]
  */
+@Ignore
 public class CellTypeTest {
 
     /**
