@@ -85,7 +85,7 @@ public class WriteExcel {
      */
     private static Map<String, Class> validationWriteData(Set<Map.Entry<String, List<?>>> entrySet) {
         //因为装载因子默认为0.75
-        Map<String, Class> result = new HashMap(entrySet.size()*4/3+1);
+        Map<String, Class> result = new HashMap<>(entrySet.size()*4/3+1);
 
         //对所有内容进行验证
         entrySet.forEach(entry -> {

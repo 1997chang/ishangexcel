@@ -90,11 +90,11 @@ public class CellRangeUtils {
         int columnCount = headColumnList.size();
         for (int r = 0; r < maxRowCount; r++) {
             List<String> rowData = new ArrayList<>(columnCount);
-            for (int c = 0; c < columnCount; c++) {
-                if (r >= headColumnList.get(c).size()) {
-                    headColumnList.get(c).add( headColumnList.get(c).get(r-1));
+            for (List<String> stringList : headColumnList) {
+                if (r >= stringList.size()) {
+                    stringList.add(stringList.get(r - 1));
                 }
-                rowData.add(headColumnList.get(c).get(r));
+                rowData.add(stringList.get(r));
             }
             result.add(rowData);
         }
