@@ -23,7 +23,7 @@ public class WriteExcel {
      * @param fileName 文件的名称
      * @param xssf 是否是XSSF文件格式
      */
-    public static void writeExcelByFileName(Map<String,List> data, String fileName, boolean xssf) {
+    public static void writeExcelByFileName(Map<String,List<?>> data, String fileName, boolean xssf) {
         //验证所有Sheet表格名称是否合法
         Map<String, Class> classMap = validationWriteData(data.entrySet());
 
@@ -42,7 +42,7 @@ public class WriteExcel {
      * @param outputStream
      * @param xssf
      */
-    public static void wirteExcelByStream(Map<String, List> data, OutputStream outputStream, boolean xssf) {
+    public static void wirteExcelByStream(Map<String, List<?>> data, OutputStream outputStream, boolean xssf) {
         //验证所有Sheet表格名称是否合法，并且完成sheet表名与Class的对应关系
         WriteContext writeContext = new WriteContext(xssf, validationWriteData(data.entrySet()));
         writeContext.write(data, outputStream);
@@ -83,12 +83,12 @@ public class WriteExcel {
      * @param entrySet
      * @return
      */
-    private static Map<String, Class> validationWriteData(Set<Map.Entry<String, List>> entrySet) {
+    private static Map<String, Class> validationWriteData(Set<Map.Entry<String, List<?>>> entrySet) {
         //因为装载因子默认为0.75
         Map<String, Class> result = new HashMap(entrySet.size()*4/3+1);
 
         //对所有内容进行验证
-        entrySet.stream().forEach(entry -> {
+        entrySet.forEach(entry -> {
 
             //1.首先验证所有的SheetName是否合法
             try {

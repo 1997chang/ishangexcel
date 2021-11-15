@@ -134,7 +134,7 @@ public class WriteContext {
      * @param data 表示写入到Excel数据的内容
      * @param fileName 表示Excel文件路径地址以及名称
      */
-    public void write(Map<String, List> data, String fileName) {
+    public void write(Map<String, List<?>> data, String fileName) {
         writeAllDataToExcel(data);
         //这里使用try-with-resource
         saveByFile(fileName);
@@ -176,7 +176,7 @@ public class WriteContext {
      * @param data 写入的数据
      * @param outputStream 输出流
      */
-    public void write(Map<String, List> data, OutputStream outputStream) {
+    public void write(Map<String, List<?>> data, OutputStream outputStream) {
         writeAllDataToExcel(data);
         saveByStream(outputStream);
     }
@@ -185,7 +185,7 @@ public class WriteContext {
      * 将全部数据写入到Excel表格。注意一个Map.Entry对应一个表格Sheet
      * @param data 写入的数据
      */
-    private void writeAllDataToExcel(Map<String, List> data) {
+    private void writeAllDataToExcel(Map<String, List<?>> data) {
         data.forEach((sheetName, sheetData) -> {
             //1.为每一个List数据，创建一个Sheet
             Sheet currentSheet = workbook.createSheet(sheetName);
@@ -450,7 +450,7 @@ public class WriteContext {
 
     /**
      * 如果文件存在得到备份文件名
-     * @param fileName
+     * @param fileName 文件名
      * @return
      */
     private static String getBackFileName(String fileName) {

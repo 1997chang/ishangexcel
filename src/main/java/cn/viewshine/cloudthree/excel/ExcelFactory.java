@@ -22,7 +22,8 @@ public final class ExcelFactory {
     /**
      * 用于完成下载时候，定义文件的名称
      */
-    private static DateTimeFormatter YYYY_MM_DD_HH_MM_SS_PATTERN = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private static final DateTimeFormatter YYYY_MM_DD_HH_MM_SS_PATTERN =
+            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     /**
      * 用于将Map数据写入到Excel文件中。
@@ -30,7 +31,7 @@ public final class ExcelFactory {
      * @param data：Key：Sheet表格名称，Value：Sheet对应的写入数据内容。用于写入多个Sheet
      * @param fileName 表示将数据写入到那个文件中
      */
-    public static void writeExcel(Map<String, List> data, String fileName) {
+    public static void writeExcel(Map<String, List<?>> data, String fileName) {
         boolean xssf = getFileType(fileName);
         WriteExcel.writeExcelByFileName(data, fileName, xssf);
     }
@@ -53,7 +54,7 @@ public final class ExcelFactory {
      * @param data 表示写入到Sheet数据内容
      * @param fileName 表示写入的文件名称
      */
-    public static void writeExcel(List data, String fileName) {
+    public static void writeExcel(List<?> data, String fileName) {
         writeExcel(Collections.singletonMap("sheet1",data), fileName);
     }
 
@@ -62,7 +63,7 @@ public final class ExcelFactory {
      * @param data Key：Sheet表格名称，Value：Sheet对应的写入数据内容。用于写入多个Sheet
      * @param outputStream 表示写入数据的输出流
      */
-    public static void writeExcel(Map<String, List> data, OutputStream outputStream, boolean xssf) {
+    public static void writeExcel(Map<String, List<?>> data, OutputStream outputStream, boolean xssf) {
         WriteExcel.wirteExcelByStream(data, outputStream, xssf);
     }
 
@@ -71,7 +72,7 @@ public final class ExcelFactory {
      * @param data Key：Sheet表格名称，Value：Sheet对应的写入数据内容。用于写入多个Sheet
      * @param outputStream 表示写入数据的输出流
      */
-    public static void writeExcel(Map<String, List> data, OutputStream outputStream) {
+    public static void writeExcel(Map<String, List<?>> data, OutputStream outputStream) {
         writeExcel(data, outputStream, true);
     }
 
@@ -80,7 +81,7 @@ public final class ExcelFactory {
      * @param data 表示写入到Sheet数据内容
      * @param outputStream 表示将数据写入到文件的输出流
      */
-    public static void writeExcel(List data, OutputStream outputStream) {
+    public static void writeExcel(List<?> data, OutputStream outputStream) {
         writeExcel(Collections.singletonMap("sheet1",data), outputStream, true);
     }
 
@@ -90,7 +91,7 @@ public final class ExcelFactory {
      * @param outputStream 表示将数据写入到文件的输出流
      * @param xssf 是否是XSSF文件格式，true
      */
-    public static void writeExcel(List data, OutputStream outputStream, boolean xssf) {
+    public static void writeExcel(List<?> data, OutputStream outputStream, boolean xssf) {
         writeExcel(Collections.singletonMap("sheet1",data), outputStream, xssf);
     }
 
@@ -99,7 +100,7 @@ public final class ExcelFactory {
      * @param data 表示写入到Excel中文件的内容
      * @param response response对应，完成Excel的下载任务
      */
-    public static void downLoadExcel(List data, HttpServletResponse response) {
+    public static void downLoadExcel(List<?> data, HttpServletResponse response) {
         downloadExcel(Collections.singletonMap( "sheet", data), true, response);
     }
 
@@ -109,7 +110,7 @@ public final class ExcelFactory {
      * @param xssf 表示是否是XLSX文件格式，TRUE表示是XLSX文件格式，FLASE表示不是XLSX文件格式
      * @param response response对应，完成Excel的下载任务
      */
-    public static void downloadExcel(Map<String, List> data, boolean xssf, HttpServletResponse response) {
+    public static void downloadExcel(Map<String, List<?>> data, boolean xssf, HttpServletResponse response) {
         //设置下载文件的名称，名称为当前时间
         StringBuilder fileName = new StringBuilder(LocalDateTime.now().format(YYYY_MM_DD_HH_MM_SS_PATTERN));
         //设置下载文件的格式
