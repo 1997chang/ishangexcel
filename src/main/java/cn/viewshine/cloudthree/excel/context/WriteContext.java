@@ -43,7 +43,7 @@ public class WriteContext {
 
     private static final int XSSF_MAX_COUNT_PER_SHEET = 1_000_000;
 
-    private static final int NOT_XSSF_MAX_XOUNT_PRE_SHEET = 60_000;
+    private static final int NOT_XSSF_MAX_COUNT_PRE_SHEET = 60_000;
 
     /**
      * 表示写入的WorkBook
@@ -432,7 +432,7 @@ public class WriteContext {
      */
     private boolean exceedSheetMaxCount(int currentRow, int dataSize) {
         return xssf ? currentRow + dataSize > XSSF_MAX_COUNT_PER_SHEET :
-                currentRow + dataSize > NOT_XSSF_MAX_XOUNT_PRE_SHEET;
+                currentRow + dataSize > NOT_XSSF_MAX_COUNT_PRE_SHEET;
     }
 
     /**
