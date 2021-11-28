@@ -1,10 +1,12 @@
 package cn.viewshine.cloudthree.excel.write;
 
 import cn.viewshine.cloudthree.excel.ExcelFactory;
+import cn.viewshine.cloudthree.excel.annotation.ExcelField;
 import cn.viewshine.cloudthree.excel.vo.Sex;
 import cn.viewshine.cloudthree.excel.vo.Student;
 import cn.viewshine.cloudthree.excel.vo.Teacher;
 import cn.viewshine.cloudthree.excel.vo.WriteModelVo;
+import net.sf.cglib.beans.BeanMap;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.*;
@@ -25,7 +27,7 @@ import java.util.stream.IntStream;
 /**
  * @author changwei[changwei@viewshine.cn]
  */
-@Ignore
+//@Ignore
 public class WriteExcelTest {
 
     public void init(List<WriteModelVo> data) {
@@ -81,12 +83,25 @@ public class WriteExcelTest {
         headMap.addAll(Arrays.asList(id, name, sex, age, tuanyuan, money));
     }
 
+    @Test
+    public void test() {
+        ExcelEntityInAnnotation entity = new ExcelEntityInAnnotation();
+        int i = 0;
+        entity.setAge((long) i);
+        entity.setName("chang "+ i);
+        entity.setBirthDate(new Date());
+        entity.setPrice(new BigDecimal(i));
+        BeanMap beanMap = BeanMap.create(entity);
+        System.out.println(beanMap);
+
+    }
+
     /**
      * 单Sheet也写入
      */
     @Test
     public void wirteExcel() {
-        List<WriteModelVo> data = new ArrayList();
+        List<WriteModelVo> data = new ArrayList<>();
         init(data);
         long l = System.currentTimeMillis();
         ExcelFactory.writeExcel(data,"D:/test1.xlsx");
@@ -156,7 +171,7 @@ public class WriteExcelTest {
         List<Teacher> teacherList = new ArrayList<>();
         loadTeacher(teacherList);
 
-        Map<String,List> sheetData = new HashMap<>();
+        Map<String,List<?>> sheetData = new HashMap<>();
         sheetData.put("学生", studentList);
         sheetData.put("教师", teacherList);
         ExcelFactory.writeExcel(sheetData, "D:/multiSheet.xlsx");
@@ -293,5 +308,64 @@ public class WriteExcelTest {
         out.close();
         System.out.println("Generated: " + file);
         wb.close();
+    }
+
+    static class ExcelEntityInAnnotation {
+
+        /**
+         * 姓名
+         */
+        @ExcelField(name = "姓名")
+        private String name;
+
+        /**
+         * 年龄
+         */
+        @ExcelField(name = "年龄")
+        private Long age;
+
+        /**
+         * 出生年月
+         */
+        @ExcelField(name = "出生年月", format = "yyyy-MM-dd HH:mm:ss")
+        private Date birthDate;
+
+        /**
+         * 价格
+         */
+        @ExcelField(name = "价格")
+        private BigDecimal price;
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public Long getAge() {
+            return age;
+        }
+
+        public void setAge(Long age) {
+            this.age = age;
+        }
+
+        public Date getBirthDate() {
+            return birthDate;
+        }
+
+        public void setBirthDate(Date birthDate) {
+            this.birthDate = birthDate;
+        }
+
+        public BigDecimal getPrice() {
+            return price;
+        }
+
+        public void setPrice(BigDecimal price) {
+            this.price = price;
+        }
     }
 }

@@ -2,6 +2,8 @@ package cn.viewshine.cloudthree.excel.utils;
 
 import org.apache.poi.ss.usermodel.*;
 
+import java.util.Objects;
+
 /**
  * 单元格的样式工具类
  * @author changwei[changwei@viewshine.cn]
@@ -33,6 +35,36 @@ public class StyleUtils {
         result.setLocked(true);
         return result;
     }
+
+
+    public static CellStyle buildCellStyle(Workbook workbook,
+                                           cn.viewshine.cloudthree.excel.metadata.CellStyle cellStyle) {
+        CellStyle result = buildCommonCellStyle(workbook);
+        Font font = workbook.createFont();
+        if (cellStyle.getFontName() != null && !Objects.equals("", cellStyle.getFontName()) ) {
+            font.setFontName(cellStyle.getFontName());
+        } else {
+            font.setFontName("宋体");
+        }
+        if (cellStyle.getFontSize() != 0) {
+            font.setFontHeightInPoints(cellStyle.getFontSize());
+        } else {
+            font.setFontHeightInPoints((short)12);
+        }
+        if (cellStyle.getFontColor() != null) {
+            font.setColor(cellStyle.getFontColor().getIndex());
+        }
+        font.setBold(cellStyle.isBold());
+        result.setFont(font);
+        if (!result.getAlignment().equals(cellStyle.getHorizontalAlignment())) {
+            result.setAlignment(cellStyle.getHorizontalAlignment());
+        }
+        if (!result.getVerticalAlignment().equals(cellStyle.getVerticalAlignment())) {
+            result.setVerticalAlignment(cellStyle.getVerticalAlignment());
+        }
+        return result;
+    }
+
 
     /**
      * 设置Excel表格头的样式

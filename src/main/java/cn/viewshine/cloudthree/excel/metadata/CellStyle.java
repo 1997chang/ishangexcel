@@ -45,6 +45,33 @@ public class CellStyle {
      */
     private VerticalAlignment verticalAlignment;
 
+    public String getFontName() {
+        return fontName;
+    }
+
+    public short getFontSize() {
+        return fontSize;
+    }
+
+    public boolean isBold() {
+        return bold;
+    }
+
+    public IndexedColors getFontColor() {
+        return fontColor;
+    }
+
+    public IndexedColors getBackGroundColor() {
+        return backGroundColor;
+    }
+
+    public HorizontalAlignment getHorizontalAlignment() {
+        return horizontalAlignment;
+    }
+
+    public VerticalAlignment getVerticalAlignment() {
+        return verticalAlignment;
+    }
 
     public CellStyle setFontName(String fontName) {
         this.fontName = fontName;

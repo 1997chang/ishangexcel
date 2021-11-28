@@ -75,16 +75,16 @@ public class StreamWriterTest {
     @Test
     public void streamWriteTools() {
         long startTime = System.currentTimeMillis();
-        StreamExcelFactory streamExcelFactory = new StreamExcelFactory("/Users/xiaochang/docFile/streamTools1.xlsx", null);
+        StreamExcelFactory streamExcelFactory = new StreamExcelFactory("/Users/xiaochang/docFile/streamTools2.xlsx", null);
         List<String> data = Arrays.asList("018501006797", "商中林","031000405541", "2020072627","13582703528","130921196909303618","冯官庄1-1-商中林","民用NB物联网表（物联网平台）","43.5","2020-12-01 00:00:36","阶梯起始日上告","2020-12-01 00:00:00","398.6","-0.75","106.83","2.4","0.01","表计预付费","500.0","0","00000000","0","开","正常","6.3","22","65511","-831","1","主动上告","43.5","39.09","表具预付费","0101", "0100");
         //				13582703528	130921196909303618	冯官庄1-1-商中林	民用NB物联网表（物联网平台）	43.5	2020-12-01 00:00:36	阶梯起始日上告	2020-12-01 00:00:00	398.6	-0.75	106.83	2.4	0.01	表计预付费	500.0	0	00000000	0	开	正常	6.3	22	65511	-831	1	主动上告	43.5	39.09			表具预付费					0101  0100
-        IntStream.range(0, 100000).forEach(i -> {
+        IntStream.range(0, 2000000).forEach(i -> {
             streamExcelFactory.writeData(data);
         });
-        IntStream.range(0, 100000).forEach(i -> {
+        IntStream.range(0, 2000000).forEach(i -> {
             streamExcelFactory.writeData(data);
         });
-        IntStream.range(0, 100000).forEach(i -> {
+        IntStream.range(0, 2000000).forEach(i -> {
             streamExcelFactory.writeData(data);
         });
         streamExcelFactory.finish();
