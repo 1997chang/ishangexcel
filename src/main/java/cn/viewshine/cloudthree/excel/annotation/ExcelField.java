@@ -1,5 +1,8 @@
 package cn.viewshine.cloudthree.excel.annotation;
 
+import cn.viewshine.cloudthree.excel.converter.Converter;
+import cn.viewshine.cloudthree.excel.converter.DefaultConverter;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -46,4 +49,6 @@ public @interface ExcelField {
      * @return
      */
     boolean columnWidthAuto() default false;
+
+    Class<? extends Converter> converter() default DefaultConverter.class;
 }
