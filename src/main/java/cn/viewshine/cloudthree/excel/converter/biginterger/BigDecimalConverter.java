@@ -24,6 +24,9 @@ public class BigDecimalConverter implements Converter<BigDecimal> {
 
     @Override
     public String converter(BigDecimal bigDecimal) {
+        if (bigDecimal == null) {
+            return "";
+        }
         return bigDecimal.setScale(scale, mode).toPlainString();
     }
 

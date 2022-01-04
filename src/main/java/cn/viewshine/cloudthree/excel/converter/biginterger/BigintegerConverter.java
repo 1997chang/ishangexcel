@@ -11,6 +11,9 @@ public class BigintegerConverter implements Converter<BigInteger> {
 
     @Override
     public String converter(BigInteger bigInteger) {
+        if (bigInteger == null) {
+            return "";
+        }
         return bigInteger.toString();
     }
 }
