@@ -1,5 +1,6 @@
 package cn.viewshine.cloudthree.excel.utils;
 
+import cn.viewshine.cloudthree.excel.metadata.ExcelCellStyle;
 import org.apache.poi.ss.usermodel.*;
 
 import java.util.Objects;
@@ -8,7 +9,7 @@ import java.util.Objects;
  * 单元格的样式工具类
  * @author changwei[changwei@viewshine.cn]
  */
-public class StyleUtils {
+public final class StyleUtils {
 
     private StyleUtils() { }
     /**
@@ -38,23 +39,23 @@ public class StyleUtils {
 
 
     public static CellStyle buildCellStyle(Workbook workbook,
-                                           cn.viewshine.cloudthree.excel.metadata.CellStyle cellStyle) {
+                                           ExcelCellStyle cellStyle) {
         CellStyle result = buildCommonCellStyle(workbook);
         Font font = workbook.createFont();
-        if (cellStyle.getFontName() != null && !Objects.equals("", cellStyle.getFontName()) ) {
-            font.setFontName(cellStyle.getFontName());
+        if (cellStyle.getFontStyle().getFontName() != null && !Objects.equals("", cellStyle.getFontStyle().getFontName()) ) {
+            font.setFontName(cellStyle.getFontStyle().getFontName());
         } else {
             font.setFontName("宋体");
         }
-        if (cellStyle.getFontSize() != 0) {
-            font.setFontHeightInPoints(cellStyle.getFontSize());
+        if (cellStyle.getFontStyle().getFontSize() != 0) {
+            font.setFontHeightInPoints(cellStyle.getFontStyle().getFontSize());
         } else {
             font.setFontHeightInPoints((short)12);
         }
-        if (cellStyle.getFontColor() != null) {
-            font.setColor(cellStyle.getFontColor().getIndex());
+        if (cellStyle.getFontStyle().getColor() != null) {
+            font.setColor(cellStyle.getFontStyle().getColor());
         }
-        font.setBold(cellStyle.isBold());
+        font.setBold(cellStyle.getFontStyle().getBold());
         result.setFont(font);
         if (!result.getAlignment().equals(cellStyle.getHorizontalAlignment())) {
             result.setAlignment(cellStyle.getHorizontalAlignment());
