@@ -3,16 +3,14 @@ package cn.viewshine.cloudthree.excel.utils;
 import cn.viewshine.cloudthree.excel.annotation.ExcelField;
 import cn.viewshine.cloudthree.excel.metadata.ColumnProperty;
 import net.sf.cglib.beans.BeanMap;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.CellType;
-import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.*;
 
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.IntStream;
 
 /**
@@ -70,16 +68,39 @@ public class CellUtils {
     /**
      * 想Excel表格的Head头中添加相关的Head头数据
      * @param row 表示当前行
-     * @param headData 表示行数据
+     * @param rowData 表示行数据
      */
-    public static void addOneRowHeadDataToCurrentSheet(Row row, List<String> headData, CellStyle cellStyle){
-        if (headData != null && headData.size() > 0){
-            IntStream.range(0, headData.size()).forEach(i -> {
-                Cell cell = row.createCell(i, CellType.STRING);
-                cell.setCellValue(headData.get(i));
-                cell.setCellStyle(cellStyle);
+    public static void addOneRowDataToCurrentSheet(Row row, List<String> rowData, 
+                                                   List<CellStyle> cellStyleList, 
+                                                   CellStyle defaultContentCellStyle,
+                                                   int startColumn, Workbook templateWorkBook){
+        Workbook workbook = row.getSheet().getWorkbook();
+        if (rowData != null && rowData.size() > 0){
+            IntStream.range(0, rowData.size()).forEach(i -> {
+                Cell cell = row.createCell(startColumn + i, CellType.STRING);
+                cell.setCellStyle(Optional.ofNullable(cellStyleList).
+                        map(list -> list.get(i)).
+                        orElse(Optional.
+                                ofNullable(fetchCellStyle(row.getRowNum(), 
+                                        startColumn + i, 
+                                        workbook, 
+                                        templateWorkBook)).
+                                orElse(defaultContentCellStyle)));
+                cell.setCellValue(rowData.get(i));
             });
         }
+    }
+
+    public static CellStyle fetchCellStyle(int row, int column, Workbook workbook, Workbook useTemplateWorkBook) {
+        if (useTemplateWorkBook == null) {
+            return null;
+        }
+        Sheet sheet = useTemplateWorkBook.getSheetAt(0);
+        return Optional.ofNullable(sheet).map(s -> s.getRow(row)).
+                map(sheetRow -> sheetRow.getCell(column)).
+                map(Cell::getCellStyle).
+                map(cs -> StyleUtils.cloneCellStyle(workbook, cs)).
+                orElse(null);
     }
 
 }

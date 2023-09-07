@@ -48,6 +48,13 @@ public final class ExcelFactory {
         WriteExcel.writeExcelByFileName(data, headName, fileName, xssf);
     }
 
+    public static void writeExcel(Map<String, List<List<String>>> data, Map<String, List<List<String>>> headName,
+                                  String title, List<String> head, List<String> tail, boolean useTemplate,
+                                  String fileName) {
+        boolean xssf = getFileType(fileName);
+        WriteExcel.writeExcelByFileName(data, headName, title, head, tail, useTemplate, fileName, xssf);
+    }
+
     /**
      * 表示将List数据内容写入到第一个Sheet中，并且Sheet名称为sheet1，只用于写一个Sheet文件内容
      * 注意：默认是使用OOXML写入到Excel文件中，文件的后缀名为：.xlsx

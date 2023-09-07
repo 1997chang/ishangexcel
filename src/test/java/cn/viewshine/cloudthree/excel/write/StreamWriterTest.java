@@ -14,6 +14,7 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 /**
@@ -78,14 +79,34 @@ public class StreamWriterTest {
         StreamExcelFactory streamExcelFactory = new StreamExcelFactory("/Users/xiaochang/docFile/streamTools2.xlsx", null);
         List<String> data = Arrays.asList("018501006797", "商中林","031000405541", "2020072627","13582703528","130921196909303618","冯官庄1-1-商中林","民用NB物联网表（物联网平台）","43.5","2020-12-01 00:00:36","阶梯起始日上告","2020-12-01 00:00:00","398.6","-0.75","106.83","2.4","0.01","表计预付费","500.0","0","00000000","0","开","正常","6.3","22","65511","-831","1","主动上告","43.5","39.09","表具预付费","0101", "0100");
         //				13582703528	130921196909303618	冯官庄1-1-商中林	民用NB物联网表（物联网平台）	43.5	2020-12-01 00:00:36	阶梯起始日上告	2020-12-01 00:00:00	398.6	-0.75	106.83	2.4	0.01	表计预付费	500.0	0	00000000	0	开	正常	6.3	22	65511	-831	1	主动上告	43.5	39.09			表具预付费					0101  0100
-        IntStream.range(0, 2000000).forEach(i -> {
+        IntStream.range(0, 60000).forEach(i -> {
             streamExcelFactory.writeData(data);
         });
-        IntStream.range(0, 2000000).forEach(i -> {
-            streamExcelFactory.writeData(data);
-        });
-        IntStream.range(0, 2000000).forEach(i -> {
-            streamExcelFactory.writeData(data);
+        streamExcelFactory.finish();
+        System.out.println(System.currentTimeMillis() - startTime);
+    }
+
+    @Test
+    public void streamWriteToolsByTempalte() throws IOException {
+        long startTime = System.currentTimeMillis();
+        List<List<String>> head = Arrays.asList("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35").stream().map(Arrays::asList).collect(Collectors.toList());
+
+        
+        
+        StreamExcelFactory streamExcelFactory = new StreamExcelFactory("/Users/xiaochang/docFile/streamTools2134.xlsx", true);
+        
+        streamExcelFactory.writeData(Arrays.asList("测试模板标题"));
+
+        CellStyle cellStyle = streamExcelFactory.fetchTemplateCellStyle(1, 1);
+        CellStyle cellStyle1 = streamExcelFactory.fetchTemplateCellStyle(1, 2);
+        streamExcelFactory.writeData(Arrays.asList("测试条件1：", "常委", "测试条件2：", "男", "测试条件三：", "15", "测试条件四：", "微型", "测试条件5：", "的撒旦"), 
+                Arrays.asList(cellStyle, cellStyle1,cellStyle, cellStyle1,cellStyle, cellStyle1,cellStyle, cellStyle1,cellStyle, cellStyle1), 0);
+        streamExcelFactory.writeHead(head);
+        
+        List<String> data = Arrays.asList("018501006797", "商中林","031000405541", "2020072627","13582703528","130921196909303618","冯官庄1-1-商中林","民用NB物联网表（物联网平台）","43.5","2020-12-01 00:00:36","阶梯起始日上告","2020-12-01 00:00:00","398.6","-0.75","106.83","2.4","0.01","表计预付费","500.0","0","00000000","0","开","正常","6.3","22","65511","-831","1","主动上告","43.5","39.09","表具预付费","0101", "0100");
+        //				13582703528	130921196909303618	冯官庄1-1-商中林	民用NB物联网表（物联网平台）	43.5	2020-12-01 00:00:36	阶梯起始日上告	2020-12-01 00:00:00	398.6	-0.75	106.83	2.4	0.01	表计预付费	500.0	0	00000000	0	开	正常	6.3	22	65511	-831	1	主动上告	43.5	39.09			表具预付费					0101  0100
+        IntStream.range(0, 60000).forEach(i -> {
+            streamExcelFactory.writeData(data, false);
         });
         streamExcelFactory.finish();
         System.out.println(System.currentTimeMillis() - startTime);

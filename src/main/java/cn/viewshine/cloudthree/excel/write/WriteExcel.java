@@ -55,7 +55,21 @@ public class WriteExcel {
      * @param fileName 文件名称
      * @param xssf 是否是2007的xlsx格式数据
      */
-    public static void writeExcelByFileName(Map<String, List<List<String>>> data, Map<String, List<List<String>>> headName, String fileName, boolean xssf) {
+    public static void writeExcelByFileName(Map<String, List<List<String>>> data, 
+                                            Map<String, List<List<String>>> headName, 
+                                            String fileName, 
+                                            boolean xssf) {
+        writeExcelByFileName(data, headName, null, null, null, false, fileName, xssf);
+    }
+
+    public static void writeExcelByFileName(Map<String, List<List<String>>> data,
+                                            Map<String, List<List<String>>> headName,
+                                            String title,
+                                            List<String> head,
+                                            List<String> tail,
+                                            boolean useTemplate,
+                                            String fileName,
+                                            boolean xssf) {
         Objects.requireNonNull(data, "表格数据不能为空");
         if (Objects.nonNull(headName)) {
             //如果headName不为空，一定要和data中的个数相同
@@ -72,8 +86,8 @@ public class WriteExcel {
             });
         }
         //创建写Excel的上下文信息，包括WorkBook等
-        WriteContext writeContext = new WriteContext(xssf, fileName);
-        writeContext.write(data, headName, fileName);
+        WriteContext writeContext = new WriteContext(xssf, fileName, useTemplate);
+        writeContext.write(data, headName, title, head, tail, fileName);
     }
 
     /**

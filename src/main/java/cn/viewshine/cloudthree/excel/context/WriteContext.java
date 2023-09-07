@@ -4,22 +4,20 @@ import cn.viewshine.cloudthree.excel.exception.WriteExcelException;
 import cn.viewshine.cloudthree.excel.metadata.ColumnProperty;
 import cn.viewshine.cloudthree.excel.utils.CellUtils;
 import cn.viewshine.cloudthree.excel.utils.FieldUtils;
+import cn.viewshine.cloudthree.excel.utils.StringUtils;
 import cn.viewshine.cloudthree.excel.utils.StyleUtils;
 import net.sf.cglib.beans.BeanMap;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.xssf.streaming.SXSSFSheet;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbookFactory;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -27,7 +25,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static cn.viewshine.cloudthree.excel.utils.CellRangeUtils.mergeCell;
-import static cn.viewshine.cloudthree.excel.utils.CellUtils.addOneRowHeadDataToCurrentSheet;
+import static cn.viewshine.cloudthree.excel.utils.CellUtils.addOneRowDataToCurrentSheet;
 
 /**
  * 这个表示写入Excel的上下文。
@@ -44,6 +42,11 @@ public class WriteContext {
     private static final int XSSF_MAX_COUNT_PER_SHEET = 1_000_000;
 
     private static final int NOT_XSSF_MAX_COUNT_PRE_SHEET = 60_000;
+
+    /**
+     * 默认列宽
+     */
+    private static final int COLUMN_WIDTH = 20;
 
     /**
      * 表示写入的WorkBook
@@ -86,30 +89,42 @@ public class WriteContext {
     private Map<String, Class> sheetClass;
 
     /**
+     * 是否使用模板
+     */
+    private XSSFWorkbook useTemplateWorkBook;
+    
+    /**
      * 这个表示创建一个空的SXSSF或者HSSF
      * 并设置默认的Head头样式，以及内容样式
      * @param xssf 当为true的时候，创建一个SXSSF的workBook，当为false时候，创建一个HSSF
      */
     public WriteContext(boolean xssf, Map<String, Class> sheetClass) {
-        this(xssf, (String) null);
+        this(xssf, (String) null, false);
         this.sheetClass = sheetClass;
     }
 
-    public WriteContext(boolean xssf, String filePath) {
+    public WriteContext(boolean xssf, String filePath, boolean useTemplate) {
         this.xssf = xssf;
         boolean fileExits = Objects.nonNull(filePath) && Files.exists(Paths.get(filePath));
         //1.创建workBook，用于写入文件内容
         if (xssf) {
-            XSSFWorkbook exitsWorkBook = null;
-            if (fileExits) {
+            if (fileExits || useTemplate) {
                 try {
-                    exitsWorkBook = XSSFWorkbookFactory.createWorkbook(new File(filePath), false);
-                } catch (IOException | InvalidFormatException e) {
+                    InputStream useTemplateInputStream;
+                    if (fileExits) {
+                        useTemplateInputStream = ClassLoader.getSystemResourceAsStream(filePath);
+                    } else {
+                        useTemplateInputStream = ClassLoader.getSystemResourceAsStream("exceltemplate/CustomizeReport.xlsx");
+                    }
+                    if (useTemplateInputStream != null) {
+                        useTemplateWorkBook = new XSSFWorkbook(useTemplateInputStream);
+                    }
+                } catch (IOException e) {
                     e.printStackTrace();
                     throw new WriteExcelException("使用XSSF打开已存在文件错误.");
                 }
             }
-            workbook = new SXSSFWorkbook(exitsWorkBook, DEFAULT_WINDOWS_COUNT, true);
+            workbook = new SXSSFWorkbook(null, DEFAULT_WINDOWS_COUNT, true);
         } else {
             try {
                 File exitsFile = null;
@@ -146,29 +161,43 @@ public class WriteContext {
      * @param headName 表格列头的数据
      * @param fileName 写入的文件
      */
-    public void write(Map<String, List<List<String>>> data, Map<String, List<List<String>>> headName, String fileName) {
-        writeAllDataToExcel(data, headName);
+    public void write(Map<String, List<List<String>>> data, 
+                      Map<String, List<List<String>>> headName,
+                      String title,
+                      List<String> head,
+                      List<String> tail,
+                      String fileName) {
+        writeAllDataToExcel(data, headName, title, head, tail);
         saveByFile(fileName);
     }
 
-    private void writeAllDataToExcel(Map<String, List<List<String>>> data, Map<String, List<List<String>>> headName) {
-        data.entrySet().stream()
-                .forEach(entry -> {
-                    final String sheetName = entry.getKey();
-                    Sheet currentSheet = workbook.getSheet(sheetName);
-                    boolean createSheet = Objects.isNull(currentSheet) ||
-                            exceedSheetMaxCount(computeLastRow(currentSheet), entry.getValue().size());
-                    if (createSheet) {
-                        Sheet sheet = workbook.createSheet(getSheetName(sheetName));
-                        //设置列宽以及表头数据
-                        IntStream.range(0, headName.size()).forEach(i -> sheet.setColumnWidth(i, 20 * 256));
-                        if (Objects.nonNull(headName) && CollectionUtils.isNotEmpty(headName.get(sheetName))) {
-                            writeHeadToSheet(sheet, headName.get(sheetName));
-                        }
-                        currentSheet = sheet;
-                    }
-                    writeContentToSheet(currentSheet, entry.getValue());
-                });
+    private void writeAllDataToExcel(Map<String, List<List<String>>> data, 
+                                     Map<String, List<List<String>>> headName,
+                                     String title,
+                                     List<String> head,
+                                     List<String> tail) {
+        data.forEach((sheetName, value) -> {
+            Sheet currentSheet = workbook.getSheet(sheetName);
+            boolean createSheet = Objects.isNull(currentSheet) ||
+                    exceedSheetMaxCount(computeLastRow(currentSheet), value.size());
+            if (createSheet) {
+                Sheet sheet = createSheet(sheetName, true);
+                if (!StringUtils.isBlank(title)) {
+                    writeContentToSheet(sheetName, Collections.singletonList(title), null, 0, true, true);
+                }
+                if (CollectionUtils.isNotEmpty(head)) {
+                    writeContentToSheet(sheetName, head, null, 1, true, true);
+                }
+                if (CollectionUtils.isNotEmpty(headName.get(sheetName))) {
+                    writeHeadToSheet(sheet, headName.get(sheetName));
+                }
+                currentSheet = sheet;
+            }
+            writeContentToSheet(currentSheet, value);
+            if (CollectionUtils.isNotEmpty(tail)) {
+                writeContentToSheet(sheetName, tail, null, 1, true, false);
+            }
+        });
     }
 
     /**
@@ -202,7 +231,7 @@ public class WriteContext {
             }
 
             //4.将数据内容写入到Sheet中
-            wirteContentToSingleSheet(currentSheet, sheetData, classFieldList);
+            writeContentToSingleSheet(currentSheet, sheetData, classFieldList);
         });
     }
 
@@ -212,7 +241,7 @@ public class WriteContext {
      * @param dataList 表示一个Sheet中的所有数据内容
      * @param columnField 表示sheet中每一列的样式内容
      */
-    private void wirteContentToSingleSheet(Sheet sheet, List dataList, List<ColumnProperty> columnField) {
+    private void writeContentToSingleSheet(Sheet sheet, List<?> dataList, List<ColumnProperty> columnField) {
         if (CollectionUtils.isEmpty(dataList)) {
             return;
         }
@@ -239,33 +268,55 @@ public class WriteContext {
         //遍历每一行的数据内容
         for (List<String> data: sheetData) {
             Row row = sheet.createRow(lastRowNum++);
-            //遍历所有的列
-            IntStream.range(0, data.size()).forEach(i -> {
-                Cell cell = row.createCell(i, CellType.STRING);
-                cell.setCellStyle(getCurrentActiveContentCellStyle());
-                cell.setCellValue(data.get(i));
-            });
+            addOneRowDataToCurrentSheet(row, data, null, defaultContentCellStyle, 0, null);
         }
     }
+    
 
     /**
      * 写入一行数据到指定的sheet中，他并不会保存文件
-     * @param sheetName
-     * @param sheetData
+     * @param sheetName sheet名称
+     * @param sheetData 一行数据内容
+     * @param startColumn 从那列开始写
      */
-    public void writeContentToSheet(String sheetName, List<String> sheetData) {
-        Sheet sheet = workbook.getSheet(sheetName);
-        if (Objects.isNull(sheet)) {
-            sheet = workbook.createSheet(sheetName);
-        }
+    public void writeContentToSheet(String sheetName, 
+                                    List<String> sheetData, 
+                                    List<CellStyle> cellStyleList, 
+                                    int startColumn, 
+                                    boolean firstSheet,
+                                    boolean useTemplate) {
+        writeRowToSheet(sheetName, sheetData, cellStyleList, startColumn, getCurrentActiveContentCellStyle(), 
+                firstSheet, useTemplate);
+    }
+
+    /**
+     * 写入一行数据到指定的sheet中，他并不会保存文件，并使用指定的样式
+     * @param sheetName sheet名称
+     * @param sheetData 一行数据内容
+     * @param cellStyleList 每一列的样式
+     * @param startColumn 从那列开始写
+     * @param defaultContentCellStyle 如果列样式为空，使用默认的样式
+     */
+    public void writeRowToSheet(String sheetName, 
+                                List<String> sheetData, 
+                                List<CellStyle> cellStyleList, 
+                                int startColumn, 
+                                CellStyle defaultContentCellStyle, 
+                                boolean firstSheet,
+                                boolean useTemplate) {
+        Sheet sheet = createSheet(sheetName, firstSheet);
         int lastRowNum = computeLastRow(sheet);
-        Row row = sheet.createRow(lastRowNum++);
+        Row row = sheet.createRow(lastRowNum);
+        if (useTemplateWorkBook != null && firstSheet) {
+            XSSFSheet templateSheet = useTemplateWorkBook.getSheetAt(0);
+            XSSFRow templateSheetRow = templateSheet.getRow(lastRowNum);
+            if (templateSheetRow != null) {
+                row.setHeight(templateSheetRow.getHeight());
+            }
+        }
         //遍历所有的列
-        IntStream.range(0, sheetData.size()).forEach(i -> {
-            Cell cell = row.createCell(i, CellType.STRING);
-            cell.setCellStyle(getCurrentActiveContentCellStyle());
-            cell.setCellValue(sheetData.get(i));
-        });
+        addOneRowDataToCurrentSheet(row, sheetData, cellStyleList, defaultContentCellStyle, startColumn,
+                useTemplate ? useTemplateWorkBook : null);
     }
 
     /**
@@ -284,9 +335,12 @@ public class WriteContext {
      * @param headName
      */
     public void writeHeadToSheet(Sheet sheet, List<List<String>> headName) {
+        if (Objects.isNull(headName)) {
+            return;
+        }
         //列标题中最大行数，以及开始行
         int rowMaxCount = headName.parallelStream().mapToInt(List::size).max().orElse(0);
-        int startRow = sheet.getLastRowNum();
+        int startRow = computeLastRow(sheet);
 
         //2.合并Head中对应的单元格
         if (rowMaxCount > 1) {
@@ -296,23 +350,29 @@ public class WriteContext {
         //3.填充HEAD数据头内容
         IntStream.range(0, rowMaxCount).forEach(i -> {
             Row row = sheet.createRow(startRow + i);
-            addOneRowHeadDataToCurrentSheet(row, headName.stream().map(list->list.get(i)).collect(Collectors.toList()), getCurrentActiveHeadCellStyle());
+            addOneRowDataToCurrentSheet(row, headName.stream().map(List -> List.get(i)).collect(Collectors.toList()), 
+                    null, getCurrentActiveHeadCellStyle(), 0, null);
         });
     }
 
     /**
      * 写入Excel头到指定sheetName中
-     * @param sheetName
-     * @param headName
+     * @param sheetName sheet文件名
+     * @param headName 写入的headName头内容
      */
     public void writeHeadToSheet(String sheetName, List<List<String>> headName) {
         Sheet sheet = workbook.getSheet(sheetName);
         if (Objects.isNull(sheet)) {
             sheet = workbook.createSheet(sheetName);
-            if (CollectionUtils.isNotEmpty(headName)) {
-                writeHeadToSheet(sheet, headName);
-            }
+            sheet.setDefaultColumnWidth(COLUMN_WIDTH);
         }
+        if (CollectionUtils.isNotEmpty(headName)) {
+            writeHeadToSheet(sheet, headName);
+        }
+    }
+
+    public CellStyle fetchCellStyle(int row, int column) {
+        return CellUtils.fetchCellStyle(row, column, workbook, useTemplateWorkBook);
     }
 
     /**
@@ -364,6 +424,9 @@ public class WriteContext {
                 if (workbook != null) {
                     workbook.close();
                 }
+                if (useTemplateWorkBook != null) {
+                    useTemplateWorkBook.close();
+                }
             } catch (IOException e) {
                 e.printStackTrace();
                 throw new WriteExcelException("关闭操作出现问题", e);
@@ -398,8 +461,10 @@ public class WriteContext {
                 if (workbook != null) {
                     workbook.close();
                 }
+                if (useTemplateWorkBook != null) {
+                    useTemplateWorkBook.close();
+                }
             } catch (IOException e) {
-                e.printStackTrace();
                 throw new WriteExcelException("关闭操作出现问题", e);
             }
         }
@@ -412,16 +477,7 @@ public class WriteContext {
      */
     private static int computeLastRow(final Sheet sheet) {
         //确定要写入的行数
-        int lastRowNum = sheet.getLastRowNum();
-        if (lastRowNum == 0 && sheet instanceof SXSSFSheet) {
-            lastRowNum = ((SXSSFWorkbook)sheet.getWorkbook()).getXSSFWorkbook().getSheet(sheet.getSheetName()).getLastRowNum();
-        }
-        //如果当前行不等于0，或者第零行数据不为空的话，让行数+1.因为Sheet返回的是最后有数据的一行下标
-        boolean rowNeedPlusOne = lastRowNum !=0 || sheet.getRow(0) != null;
-        if (rowNeedPlusOne) {
-            lastRowNum++;
-        }
-        return lastRowNum;
+        return sheet.getPhysicalNumberOfRows();
     }
 
     /**
@@ -438,7 +494,7 @@ public class WriteContext {
     /**
      * 用于确定最终的sheet的名称
      * @param baseSheetName 基本的sheet名称
-     * @return
+     * @return sheet名称
      */
     private String getSheetName(String baseSheetName) {
         String sheetName = baseSheetName;
@@ -451,11 +507,30 @@ public class WriteContext {
     /**
      * 如果文件存在得到备份文件名
      * @param fileName 文件名
-     * @return
+     * @return 备份文件名
      */
     private static String getBackFileName(String fileName) {
         int suffix = fileName.lastIndexOf(".");
         return fileName.substring(0, suffix) +"_back." + fileName.substring(suffix + 1);
     }
 
+    private Sheet createSheet(String sheetName) {
+        return createSheet(sheetName, false);
+    }
+
+    private Sheet createSheet(String sheetName, boolean addMergedRegion) {
+        Sheet sheet = workbook.getSheet(sheetName);
+        if (Objects.isNull(sheet)) {
+            sheet = workbook.createSheet(sheetName);
+            if (addMergedRegion && useTemplateWorkBook != null) {
+                useTemplateWorkBook.getSheetAt(0).getMergedRegions().forEach(sheet::addMergedRegion);
+            }
+            sheet.setDefaultColumnWidth(COLUMN_WIDTH);
+        }
+        return sheet;
+    }
+
+    public Workbook getWorkbook() {
+        return workbook;
+    }
 }

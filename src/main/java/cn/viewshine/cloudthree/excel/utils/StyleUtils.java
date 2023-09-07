@@ -114,4 +114,16 @@ public final class StyleUtils {
         result.setDataFormat(workbook.getCreationHelper().createDataFormat().getFormat(dataFormat));
         return result;
     }
+
+    /**
+     * 从现有的单元格样式中生成一个新的，注意：不同workBook的CellStyle不同共用，必须先在当前workbook中创建一个CellStyle，然后进行复制
+     * @param workbook 当前workbook
+     * @param cellStyle 要克隆的样式
+     * @return 返回的样式
+     */
+    public static CellStyle cloneCellStyle(Workbook workbook, CellStyle cellStyle) {
+        CellStyle result = workbook.createCellStyle();
+        result.cloneStyleFrom(cellStyle);
+        return result;
+    }
 }
