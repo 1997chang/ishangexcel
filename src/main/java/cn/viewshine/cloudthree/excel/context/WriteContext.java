@@ -17,10 +17,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -39,7 +36,7 @@ public class WriteContext {
      */
     private static final int DEFAULT_WINDOWS_COUNT = 200;
 
-    private static final int XSSF_MAX_COUNT_PER_SHEET = 1_000_000;
+    private static final int XSSF_MAX_COUNT_PER_SHEET = 500_000;
 
     private static final int NOT_XSSF_MAX_COUNT_PRE_SHEET = 60_000;
 
@@ -47,6 +44,11 @@ public class WriteContext {
      * 默认列宽
      */
     private static final int COLUMN_WIDTH = 20;
+
+    /**
+     * 表头表尾的最大长度
+     */
+    private static final int HEAD_TAIL_MAX_LENGTH = 8;
 
     /**
      * 表示写入的WorkBook
@@ -185,19 +187,41 @@ public class WriteContext {
                 if (!StringUtils.isBlank(title)) {
                     writeContentToSheet(sheetName, Collections.singletonList(title), null, 0, true, true);
                 }
-                if (CollectionUtils.isNotEmpty(head)) {
-                    writeContentToSheet(sheetName, head, null, 1, true, true);
-                }
+                writeTableHeadOrTail(sheetName, head, false);
                 if (CollectionUtils.isNotEmpty(headName.get(sheetName))) {
                     writeHeadToSheet(sheet, headName.get(sheetName));
                 }
                 currentSheet = sheet;
             }
             writeContentToSheet(currentSheet, value);
-            if (CollectionUtils.isNotEmpty(tail)) {
-                writeContentToSheet(sheetName, tail, null, 1, true, false);
-            }
+            writeTableHeadOrTail(sheetName, tail, true);
         });
+    }
+    
+    private void writeTableHeadOrTail(String sheetName, List<String> data, boolean addSpaceLine) {
+        if (CollectionUtils.isNotEmpty(data)) {
+            CellStyle firstCellStyle = fetchCellStyle(1, 1);
+            CellStyle secondCellStyle = fetchCellStyle(1, 2);
+            if (addSpaceLine) {
+                writeContentToSheet(sheetName, Collections.singletonList(""), 
+                        Collections.singletonList(secondCellStyle), 0, true, false);
+            }
+            if (data.size() > HEAD_TAIL_MAX_LENGTH) {
+                List<CellStyle> cellStyleList = Arrays.asList(firstCellStyle, secondCellStyle,
+                        firstCellStyle, secondCellStyle, firstCellStyle, secondCellStyle, firstCellStyle, secondCellStyle);
+                List<List<String>> partition = split(data);
+                for (int i = 0; i < partition.size() - 1; i++) {
+                    writeContentToSheet(sheetName, partition.get(i), cellStyleList, 1, true, false);
+                }
+                data = partition.get(partition.size() - 1);
+            }
+            List<CellStyle> cellStyleList = new ArrayList<>(data.size());
+            while (cellStyleList.size() < data.size()) {
+                cellStyleList.add(firstCellStyle);
+                cellStyleList.add(secondCellStyle);
+            }
+            writeContentToSheet(sheetName, data, cellStyleList, 1, true, false);
+        }
     }
 
     /**
@@ -532,5 +556,22 @@ public class WriteContext {
 
     public Workbook getWorkbook() {
         return workbook;
+    }
+
+    private static <T> List<List<T>> split(List<T> data) {
+        List<List<T>> result = Collections.emptyList();
+        if (CollectionUtils.isNotEmpty(data)) {
+            int length = (data.size() - 1) / HEAD_TAIL_MAX_LENGTH + 1;
+            result = new ArrayList<>(length);
+            int i = 0;
+            int start = 0;
+            while (i < length) {
+                int end = Math.min(start + HEAD_TAIL_MAX_LENGTH, data.size());
+                result.add(data.subList(start, end));
+                start += HEAD_TAIL_MAX_LENGTH;
+                i++;
+            }
+        }
+        return result;
     }
 }
