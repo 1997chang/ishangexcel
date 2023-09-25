@@ -114,9 +114,9 @@ public class WriteContext {
                 try {
                     InputStream useTemplateInputStream;
                     if (fileExits) {
-                        useTemplateInputStream = ClassLoader.getSystemResourceAsStream(filePath);
+                        useTemplateInputStream = WriteContext.class.getClassLoader().getResourceAsStream(filePath);
                     } else {
-                        useTemplateInputStream = ClassLoader.getSystemResourceAsStream("exceltemplate/CustomizeReport.xlsx");
+                        useTemplateInputStream = WriteContext.class.getClassLoader().getResourceAsStream("exceltemplate/CustomizeReport.xlsx");
                     }
                     if (useTemplateInputStream != null) {
                         useTemplateWorkBook = new XSSFWorkbook(useTemplateInputStream);
